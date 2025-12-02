@@ -34,7 +34,7 @@ interface IMarketplace {
         );
 }
 
-contract VoucherEscrow is ReentrancyGuard {
+contract Escrow is ReentrancyGuard {
     IERC20 public mneeToken;
     address public admin;
     IMarketplace public marketplace;
