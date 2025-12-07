@@ -1,33 +1,52 @@
+"use client";
+
 export default function Header() {
     return (
-        <header className="bg-pure-black text-white sticky top-0 z-50 border-b-4 border-punchy-red">
-            <nav className="max-w-7xl mx-auto px-6 py-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <img
-                            src=""
-                            alt="CouponMarche"
-                            className="w-10 h-10 object-contain"
-                        />
-                        <span className="font-display text-xl font-bold">CouponMarche</span>
-                    </div>
+        <header className="header">
+            <nav className="nav-container">
+                {/* Logo */}
+                <h1 className="nav-logo">
+                    CouponMarchè
+                </h1>
 
-                    <div className="hidden md:flex items-center gap-6 font-body">
-                        <a href="#marketplace" className="hover:text-sunny-yellow transition-colors font-semibold">
-                            Marketplace
+                {/* Navigation Links */}
+                <ul className="nav-links">
+                    <li>
+                        <a href="#marketplace" className="nav-link">
+                            MarketPlace
                         </a>
-                        <a href="#how-it-works" className="hover:text-sunny-yellow transition-colors font-semibold">
-                            How It Works
+                    </li>
+                    <li>
+                        <a href="#sell" className="nav-link">
+                            Sell
                         </a>
-                        <a href="#about" className="hover:text-sunny-yellow transition-colors font-semibold">
+                    </li>
+                    <li>
+                        <a href="#how-it-works" className="nav-link">
+                            How it works
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#about" className="nav-link">
                             About
                         </a>
-                    </div>
+                    </li>
+                </ul>
 
-                    <button className="bg-bold-teal text-white font-bold py-2 px-6 rounded-lg hover:scale-105 transition-transform border-4 border-white shadow-lg">
-                        Connect Wallet
+                {/* Search & Connect Wallet */}
+                <form className="nav-form">
+                    <input
+                        type="text"
+                        placeholder="what do u want to know"
+                        className="nav-search"
+                    />
+                    <button
+                        type="button"
+                        className="nav-wallet-btn"
+                    >
+                        Search
                     </button>
-                </div>
+                </form>
             </nav>
         </header>
     );

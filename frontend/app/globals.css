@@ -29,6 +29,8 @@
     font-family: var(--font-inter), "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-left: 10%;
+    padding-right: 10%;
   }
 
   /* Heading Styles - Neo-Brutalist Typography */
@@ -260,5 +262,204 @@
 
   .animate-bounce-slow {
     animation: bounce-slow 3s ease-in-out infinite;
+  }
+}
+
+/* =====
+===== HEADER / NAVBAR STYLES ========== */
+.header {
+  background-color: var(--off-white);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 6px solid var(--pure-black);
+  box-shadow: 0 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .nav-container {
+    padding: 1.25rem 1.5rem;
+    gap: 2rem;
+  }
+}
+
+.nav-logo {
+  font-family: var(--font-fredoka), system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pure-black);
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .nav-logo {
+    font-size: 1.875rem;
+  }
+}
+
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+  }
+}
+
+.nav-links li {
+  position: relative;
+  padding: 0 1.25rem;
+}
+
+/* Separator between nav items */
+.nav-links li:not(:last-child)::after {
+  content: '|';
+  position: absolute;
+  right: 0;
+  color: var(--muted-gray);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.nav-link {
+  font-weight: 700;
+  color: var(--pure-black);
+  text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: var(--bold-teal);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: var(--bold-teal);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Info Container Style (for other components) */
+.info-container {
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  color: var(--pure-black);
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 3px solid var(--pure-black);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  transition: all 0.2s;
+}
+
+.info-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.nav-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .nav-form {
+    gap: 1rem;
+  }
+}
+
+.nav-search {
+  display: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 4px solid var(--pure-black);
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 1rem;
+  background-color: white;
+  transition: box-shadow 0.2s;
+}
+
+.nav-search:focus {
+  outline: none;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+@media (min-width: 768px) {
+  .nav-search {
+    display: block;
+  }
+}
+
+.nav-wallet-btn {
+  background-color: var(--bold-teal);
+  color: white;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 4px solid var(--pure-black);
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-wallet-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+  .nav-wallet-btn {
+    padding: 0.875rem 2rem;
+    border: 5px solid var(--pure-black);
+    box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+    font-size: 1rem;
+  }
+
+  .nav-wallet-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 9px 9px 0px 0px rgba(0, 0, 0, 1);
+  }
+}
+
+/* Desktop and up */
+@media (min-width: 1024px) {
+  .nav-wallet-btn {
+    padding: 1rem 2.5rem;
+    box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+    font-size: 1.125rem;
+  }
+
+  .nav-wallet-btn:hover {
+    box-shadow: 11px 11px 0px 0px rgba(0, 0, 0, 1);
   }
 }
