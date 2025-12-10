@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 interface HeaderProps {
-    pageType?: 'home' | 'marketplace';
+    pageType?: 'home' | 'marketplace' | 'sell';
     walletAddress?: string | null;
 }
 

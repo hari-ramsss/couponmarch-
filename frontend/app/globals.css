@@ -2360,3 +2360,443 @@
     text-align: center;
   }
 }
+
+/* ====
+====== UPLOAD SECTION STYLES ========== */
+.upload-section {
+  background-color: white;
+  border: 4px solid var(--pure-black);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+  margin-bottom: 2rem;
+}
+
+.upload-section h2 {
+  color: var(--pure-black);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  font-family: var(--font-fredoka), system-ui, sans-serif;
+  text-align: center;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-group label {
+  display: block;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pure-black);
+  margin-bottom: 0.75rem;
+}
+
+.form-group input[type="file"] {
+  width: 90%;
+  padding: 1rem;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  background-color: var(--off-white);
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.form-group input[type="file"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+  background-color: white;
+}
+
+.form-group input[type="file"]:focus {
+  outline: none;
+  background-color: var(--sunny-yellow);
+}
+
+/* File Input Custom Styling */
+.form-group input[type="file"]::file-selector-button {
+  background-color: var(--bold-teal);
+  color: white;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.form-group input[type="file"]::file-selector-button:hover {
+  background-color: var(--punchy-red);
+}
+
+/* Image Preview */
+.image-preview {
+  background-color: var(--off-white);
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  margin-top: 1rem;
+  margin-bottom:1rem;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 0.5rem;
+  border: 2px solid var(--pure-black);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  margin-bottom: 1rem;
+}
+
+.image-preview p {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted-gray);
+  margin: 0;
+}
+
+/* AI Validation Notice */
+.ai-validation-note {
+  background-color: var(--sunny-yellow);
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  margin-top: 2rem;
+}
+
+.ai-validation-note p {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--pure-black);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  .upload-section {
+    padding: 1.5rem;
+  }
+
+  .upload-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group input[type="file"] {
+    padding: 0.875rem;
+    font-size: 0.8125rem;
+  }
+
+  .image-preview {
+    padding: 1.25rem;
+  }
+
+  .image-preview img {
+    max-height: 200px;
+  }
+
+  .ai-validation-note {
+    padding: 1.25rem;
+  }
+
+  .ai-validation-note p {
+    font-size: 0.9375rem;
+  }
+}
+
+/* ===
+======= SELL PAGE STYLES ========== */
+.sell-page-header {
+  padding: 1rem 1.5rem 1rem 1.5rem;
+  text-align: center;
+  background-color: var(--off-white);
+}
+
+.sell-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sell-container h1 {
+  color: var(--pure-black);
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  margin-bottom: 1rem;
+  font-family: var(--font-fredoka), system-ui, sans-serif;
+}
+
+.sell-container p {
+  color: var(--muted-gray);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
+/* Sell Page Content Layout */
+.sell-page-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem 1.5rem;
+}
+
+/* Top Section: Voucher Info + Upload (Horizontal) */
+.sell-top-section {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 1023px) {
+  .sell-top-section {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+/* Voucher Information Section */
+.voucher-info-section {
+  flex: 1;
+  background-color: white;
+  border: 4px solid var(--pure-black);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.voucher-info-section h2 {
+  color: var(--pure-black);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  font-family: var(--font-fredoka), system-ui, sans-serif;
+  text-align: center;
+}
+
+/* Form Group Styles for Sell Page */
+.voucher-info-section .form-group,
+.price-section .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.voucher-info-section .form-group label,
+.price-section .form-group label {
+  display: block;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--pure-black);
+  margin-bottom: 0.5rem;
+}
+
+.voucher-info-section .form-group input,
+.voucher-info-section .form-group select,
+.voucher-info-section .form-group textarea,
+.price-section .form-group input {
+  width: 95%;
+  padding: 0.875rem 1rem;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  background-color: white;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.voucher-info-section .form-group input:focus,
+.voucher-info-section .form-group select:focus,
+.voucher-info-section .form-group textarea:focus,
+.price-section .form-group input:focus {
+  outline: none;
+  background-color: var(--off-white);
+  transform: translateY(-1px);
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.voucher-info-section .form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+/* Upload Section in Top Layout */
+.sell-top-section .upload-section {
+  flex: 0 0 400px;
+  margin-bottom: 0;
+}
+
+@media (max-width: 1023px) {
+  .sell-top-section .upload-section {
+    flex: none;
+  }
+}
+
+/* Bottom Section: Price */
+.sell-bottom-section {
+  display: flex;
+  justify-content: center;
+}
+
+/* ========== PRICE SECTION STYLES ========== */
+.price-section {
+  background-color: white;
+  border: 4px solid var(--pure-black);
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+  max-width: 600px;
+  width: 100%;
+}
+
+.price-section h2 {
+  color: var(--pure-black);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  font-family: var(--font-fredoka), system-ui, sans-serif;
+  text-align: center;
+}
+
+/* Price Note */
+.price-note {
+  background-color: var(--sunny-yellow);
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.price-note p {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pure-black);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Wallet Section */
+.wallet-section {
+  margin-bottom: 2rem;
+}
+
+.wallet-section label {
+  display: block;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--pure-black);
+  margin-bottom: 0.75rem;
+}
+
+.wallet-address {
+  background-color: var(--bold-teal);
+  color: white;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  border: 3px solid var(--pure-black);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  margin: 0;
+}
+
+.connect-wallet-btn {
+  background-color: var(--bold-teal);
+  color: white;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.875rem 2rem;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.connect-wallet-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Submit Button */
+.submit-listing-btn {
+  width: 100%;
+  background-color: var(--punchy-red);
+  color: white;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  padding: 1rem 2rem;
+  border: 4px solid var(--pure-black);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.submit-listing-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.submit-listing-btn:active {
+  transform: translateY(0);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Responsive adjustments for sell page */
+@media (max-width: 767px) {
+  .sell-page-header {
+    padding: 2rem 1rem 1.5rem 1rem;
+  }
+
+  .sell-page-content {
+    padding: 0 1rem 3rem 1rem;
+  }
+
+  .voucher-info-section,
+  .price-section {
+    padding: 1.5rem;
+  }
+
+  .voucher-info-section h2,
+  .price-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .sell-top-section .upload-section {
+    flex: none;
+  }
+
+  .submit-listing-btn {
+    font-size: 1rem;
+    padding: 0.875rem 1.5rem;
+  }
+}
