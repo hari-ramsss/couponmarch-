@@ -33,7 +33,7 @@ export default function Header() {
                     </li>
                 </ul>
 
-                {/* Search & Connect Wallet */}
+                {/* Search  */}
                 <form className="nav-form">
                     <input
                         type="text"
