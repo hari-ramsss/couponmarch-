@@ -10,7 +10,7 @@ export default function HeroComp() {
                 <p className="hero-subtitle">
                     Powered by AI validation and blockchain escrow for 100% safe transactions.
                 </p>
-                <button className="hero-cta-btn">Connect Wallet</button>
+                <button className="hero-cta-btn">Explore the Marketplace</button>
             </div>
         </section>
     )

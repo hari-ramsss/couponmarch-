@@ -3,11 +3,14 @@
 import Header from "@/components/Header";
 import HeroComp from "@/components/HeroComp";
 import VerifiedListing from "@/components/VerifiedListing";
-
+import Footer from "@/components/Footer";
 export default function Home() {
+  // Mock wallet address - replace with actual wallet connection logic
+  const walletAddress = null; // Set to actual address when connected: "0x1234...5678"
+
   return (
     <div className="min-h-screen bg-off-white">
-      <Header />
+      <Header pageType="home" walletAddress={walletAddress} />
       <HeroComp />
 
       {/* How it works section */}
@@ -63,102 +66,48 @@ export default function Home() {
         </div>
       </section>
 
-    <VerifiedListing/>
-    <section id="why-couponmarch">
-  <h2>Why Use Couponmarch?</h2>
+      <VerifiedListing />
+      <section id="why-couponmarch">
+        <h2>Why Use Couponmarch?</h2>
 
-  <div className="timeline-layout">
+        <div className="timeline-layout">
 
-    <div className="timeline-item">
-      <span className="timeline-icon">🧠</span>
-      <div className="timeline-text">
-        <h3>AI-Based Authenticity Checks</h3>
-        <p>AI detects fake, reused, or invalid vouchers instantly.</p>
-      </div>
-    </div>
+          <div className="timeline-item">
+            <span className="timeline-icon">🧠</span>
+            <div className="timeline-text">
+              <h3>AI-Based Authenticity Checks</h3>
+              <p>AI detects fake, reused, or invalid vouchers instantly.</p>
+            </div>
+          </div>
 
-    <div className="timeline-item">
-      <span className="timeline-icon">🔒</span>
-      <div className="timeline-text">
-        <h3>Secure Blockchain Escrow</h3>
-        <p>Funds stay safely locked until the voucher is verified by the buyer.</p>
-      </div>
-    </div>
+          <div className="timeline-item">
+            <span className="timeline-icon">🔒</span>
+            <div className="timeline-text">
+              <h3>Secure Blockchain Escrow</h3>
+              <p>Funds stay safely locked until the voucher is verified by the buyer.</p>
+            </div>
+          </div>
 
-    <div className="timeline-item">
-      <span className="timeline-icon">⚖️</span>
-      <div className="timeline-text">
-        <h3>Fair Dispute Resolution</h3>
-        <p>Buyers can raise disputes for invalid vouchers; refunds are secure.</p>
-      </div>
-    </div>
+          <div className="timeline-item">
+            <span className="timeline-icon">⚖️</span>
+            <div className="timeline-text">
+              <h3>Fair Dispute Resolution</h3>
+              <p>Buyers can raise disputes for invalid vouchers; refunds are secure.</p>
+            </div>
+          </div>
 
-    <div className="timeline-item">
-      <span className="timeline-icon">📊</span>
-      <div className="timeline-text">
-        <h3>On-Chain Transparency</h3>
-        <p>Every transaction is traceable and tamper-proof.</p>
-      </div>
-    </div>
+          <div className="timeline-item">
+            <span className="timeline-icon">📊</span>
+            <div className="timeline-text">
+              <h3>On-Chain Transparency</h3>
+              <p>Every transaction is traceable and tamper-proof.</p>
+            </div>
+          </div>
 
-  </div>
-</section>
+        </div>
+      </section>
 
-<footer id="footer">
-
-  {/* Top Divider */}
-  <hr className="footer-divider" />
-
-  <div className="footer-container">
-
-    {/* Column 1 – Information */}
-    <div className="footer-section">
-      <h3>Information</h3>
-      <ul className="footer-links">
-        <li><a href="/about">About</a></li>
-        <li><a href="/faq">FAQ</a></li>
-        <li><a href="/contact">Contact</a></li>
-        <li><a href="/terms">Terms & Privacy</a></li>
-      </ul>
-    </div>
-
-    {/* Middle Divider */}
-    <hr className="footer-divider-vertical" />
-
-    {/* Column 2 – Quick Links */}
-    <div className="footer-section">
-      <h3>Quick Links</h3>
-      <ul className="footer-links">
-        <li><a href="/marketplace">Marketplace</a></li>
-        <li><a href="/create-listing">Create Listing</a></li>
-        <li><a href="/how-it-works">How It Works</a></li>
-        <li><a href="/support">Support</a></li>
-      </ul>
-    </div>
-
-    {/* Middle Divider */}
-    <hr className="footer-divider-vertical" />
-
-    {/* Column 3 – Social */}
-    <div className="footer-section">
-      <h3>Follow Us</h3>
-      <ul className="footer-links">
-        <li><a href="#">Instagram</a></li>
-        <li><a href="#">Twitter / X</a></li>
-        <li><a href="#">YouTube</a></li>
-        <li><a href="#">LinkedIn</a></li>
-      </ul>
-    </div>
-
-  </div>
-
-  {/* Bottom Divider */}
-  <hr className="footer-divider" />
-
-  <p className="footer-copy">© 2025 Couponmarch. All rights reserved.</p>
-
-</footer>
-
+     <Footer/>
     </div>
   );
 }
