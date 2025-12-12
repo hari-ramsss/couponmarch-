@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -13,6 +10,16 @@
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@openzeppelin/contracts": "^4.9.3",
+    "dotenv": "^16.4.5",
     "hardhat": "^2.27.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:all": "hardhat run scripts/deployAll.js",
+    "deploy:all:localhost": "hardhat run scripts/deployAll.js --network localhost",
+    "deploy:all:sepolia": "hardhat run scripts/deployAll.js --network sepolia",
+    "deploy:token": "hardhat run scripts/deployMockERC20.js",
+    "deploy:marketplace": "hardhat run scripts/deployMarketplace.js",
+    "deploy:escrow": "hardhat run scripts/deployEscrow.js"
   }
 }
