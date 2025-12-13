@@ -1,6 +1,10 @@
+"use client";
+
 import BuyVoucherModal from "./BuyVoucherModal";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
+
 interface ListingCardProps {
     title: string;
     type: string;
@@ -24,11 +28,21 @@ export default function ListingCard({
     logo,
     voucherImage
 }: ListingCardProps) {
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const router = useRouter();
 
     const handleBuyClick = () => {
         setIsModalOpen(true);
     };
+
+    const handleViewClick = () => {
+        if (id) {
+            router.push(`/marketplace/${id}`);
+        }
+    };
+
+
     return (
         <div className="listing-card">
 
@@ -74,8 +88,9 @@ export default function ListingCard({
             </p>
 
             {/* CTA Button */}
-            <button className="listing-btn" onClick={handleBuyClick}>
-                View / Buy
+            <button className="listing-btn" onClick={handleBuyClick}> Buy </button>
+            <button className="listing-btn" onClick={handleViewClick}>
+                View
             </button>
             {/* Modal Integration - Render at document root */}
             {isModalOpen && typeof document !== 'undefined' && createPortal(

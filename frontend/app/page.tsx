@@ -5,12 +5,9 @@ import HeroComp from "@/components/HeroComp";
 import VerifiedListing from "@/components/VerifiedListing";
 import Footer from "@/components/Footer";
 export default function Home() {
-  // Mock wallet address - replace with actual wallet connection logic
-  const walletAddress = null; // Set to actual address when connected: "0x1234...5678"
-
   return (
     <div className="min-h-screen bg-off-white">
-      <Header pageType="home" walletAddress={walletAddress} />
+      <Header pageType="home" />
       <HeroComp />
 
       {/* How it works section */}
