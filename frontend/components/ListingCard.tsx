@@ -1,3 +1,7 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
 interface ListingCardProps {
     title: string;
     type: string;
@@ -14,8 +18,17 @@ export default function ListingCard({
     discount,
     description,
     price,
-    verified
+    verified,
+    id
 }: ListingCardProps) {
+    const router = useRouter();
+
+    const handleViewClick = () => {
+        if (id) {
+            router.push(`/marketplace/${id}`);
+        }
+    };
+
     return (
         <div className="listing-card">
 
@@ -52,7 +65,7 @@ export default function ListingCard({
             </p>
 
             {/* CTA Button */}
-            <button className="listing-btn">
+            <button className="listing-btn" onClick={handleViewClick}>
                 View / Buy
             </button>
 

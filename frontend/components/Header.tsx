@@ -1,19 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useWallet } from "@/contexts/WalletContext";
+import { getMneeBalance, formatTokenAmount } from "@/lib/contracts-instance";
 
 interface HeaderProps {
     pageType?: 'home' | 'marketplace' | 'sell';
-    walletAddress?: string | null;
 }
 
-export default function Header({ pageType = 'home', walletAddress = null }: HeaderProps) {
+export default function Header({ pageType = 'home' }: HeaderProps) {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [mneeBalance, setMneeBalance] = useState<string | null>(null);
+    const { wallet, connect, ensureSepolia, isLoading } = useWallet();
 
-    // Mock function to simulate wallet connection
-    const connectWallet = () => {
-        // This would integrate with your actual wallet connection logic
-        console.log("Connecting wallet...");
+    // Fetch MNEE balance when wallet is connected
+    useEffect(() => {
+        async function fetchBalance() {
+            if (wallet.isConnected && wallet.provider && wallet.address) {
+                try {
+                    const balance = await getMneeBalance(wallet.provider, wallet.address);
+                    const formatted = await formatTokenAmount(wallet.provider, balance);
+                    setMneeBalance(formatted);
+                } catch (error) {
+                    console.error('Error fetching MNEE balance:', error);
+                    setMneeBalance(null);
+                }
+            } else {
+                setMneeBalance(null);
+            }
+        }
+
+        fetchBalance();
+        // Refresh balance every 10 seconds
+        const interval = setInterval(fetchBalance, 10000);
+        return () => clearInterval(interval);
+    }, [wallet.isConnected, wallet.provider, wallet.address]);
+
+    const handleConnectWallet = async () => {
+        try {
+            await connect();
+            // Ensure we're on Sepolia
+            if (wallet.provider) {
+                await ensureSepolia();
+            }
+        } catch (error: any) {
+            console.error('Failed to connect wallet:', error);
+            alert(error.message || 'Failed to connect wallet');
+        }
     };
 
     const formatWalletAddress = (address: string) => {
@@ -80,25 +113,29 @@ export default function Header({ pageType = 'home', walletAddress = null }: Head
                 ) : (
                     /* Home: Wallet Profile */
                     <div className="nav-wallet-section">
-                        {walletAddress ? (
+                        {wallet.isConnected && wallet.address ? (
                             /* Connected Wallet */
                             <div className="wallet-profile">
                                 <div className="wallet-info">
-                                    <span className="wallet-address">{formatWalletAddress(walletAddress)}</span>
+                                    <span className="wallet-address">{formatWalletAddress(wallet.address)}</span>
+                                    {mneeBalance !== null && (
+                                        <span className="wallet-balance">{mneeBalance} MNEE</span>
+                                    )}
                                     <span className="wallet-status">Connected</span>
                                 </div>
                                 <div className="wallet-avatar">
-                                    <img src="./images/user-avatar.png" alt="User Avatar" />
+                                    <img src="./img/blank-user.png" alt="User Avatar" />
                                 </div>
                             </div>
                         ) : (
                             /* No Wallet Connected */
                             <div className="wallet-disconnected">
                                 <button
-                                    onClick={connectWallet}
+                                    onClick={handleConnectWallet}
                                     className="nav-wallet-btn"
+                                    disabled={isLoading}
                                 >
-                                    Connect Wallet
+                                    {isLoading ? 'Connecting...' : 'Connect Wallet'}
                                 </button>
                                 <div className="wallet-avatar-placeholder">
                                     <img src="./img/blank-user.png" alt="No wallet connected" />

@@ -67,3 +67,5 @@ out
 *.tmp
 *.temp
 .cache
+
+*.txt
