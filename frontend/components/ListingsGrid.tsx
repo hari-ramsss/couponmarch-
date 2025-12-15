@@ -8,6 +8,7 @@ interface Listing {
     description: string;
     price: string;
     verified: boolean;
+    image?: string;
 }
 
 interface ListingsGridProps {

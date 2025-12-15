@@ -25,6 +25,7 @@ export default function Marketplace() {
             description: "Valid on all Amazon orders above ₹1,999.",
             price: "0.015 ETH",
             verified: true,
+            image: "./img/blank-coupon.png"
         },
         {
             id: 2,
@@ -34,6 +35,7 @@ export default function Marketplace() {
             description: "Applicable on orders above ₹299.",
             price: "0.008 ETH",
             verified: true,
+            image: "./img/blank-coupon.png"
         },
         {
             id: 3,
@@ -43,6 +45,7 @@ export default function Marketplace() {
             description: "Valid on fashion and accessories.",
             price: "0.010 ETH",
             verified: false,
+            image: "./img/blank-coupon.png"
         },
         {
             id: 4,
@@ -52,6 +55,7 @@ export default function Marketplace() {
             description: "Usable on flights or hotels above ₹4000.",
             price: "0.020 ETH",
             verified: true,
+            image: "./img/blank-coupon.png"
         },
     ];
     return (
@@ -96,7 +100,7 @@ export default function Marketplace() {
                     </section>
                 </main>
             </div>
-            <Footer/>
+            <Footer />
         </div>
     )
 }

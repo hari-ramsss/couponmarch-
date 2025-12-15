@@ -1,3 +1,7 @@
+import BuyVoucherModal from "./BuyVoucherModal";
+import VoucherImage from "./VoucherImage";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 interface ListingCardProps {
     title: string;
     type: string;
@@ -6,6 +10,7 @@ interface ListingCardProps {
     price: string;
     verified: boolean;
     id?: string | number;
+    image?: string;
 }
 
 export default function ListingCard({
@@ -14,10 +19,24 @@ export default function ListingCard({
     discount,
     description,
     price,
-    verified
+    verified,
+    id,
+    image
 }: ListingCardProps) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleBuyClick = () => {
+        setIsModalOpen(true);
+    };
     return (
         <div className="listing-card">
+
+            {/* Voucher Image */}
+            <VoucherImage
+                src={image}
+                alt={title}
+                className="listing-image"
+            />
 
             {/* Discount Badge */}
             {discount && (
@@ -52,9 +71,19 @@ export default function ListingCard({
             </p>
 
             {/* CTA Button */}
-            <button className="listing-btn">
+            <button className="listing-btn" onClick={handleBuyClick}>
                 View / Buy
             </button>
+            {/* Modal Integration - Render at document root */}
+            {isModalOpen && typeof document !== 'undefined' && createPortal(
+                <BuyVoucherModal
+                    voucherId={id}
+                    voucherTitle={title}
+                    voucherPrice={price}
+                    onClose={() => setIsModalOpen(false)}
+                />,
+                document.body
+            )}
 
         </div>
     );
