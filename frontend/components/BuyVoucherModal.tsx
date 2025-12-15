@@ -1,4 +1,5 @@
 import { useState } from "react";
+import VoucherImage from "./VoucherImage";
 
 type ModalState =
     | "PREVIEW"
@@ -12,6 +13,7 @@ interface BuyVoucherModalProps {
     voucherId?: string | number;
     voucherTitle?: string;
     voucherPrice?: string;
+    voucherImage?: string;
     onClose: () => void;
 }
 
@@ -19,6 +21,7 @@ export default function BuyVoucherModal({
     voucherId,
     voucherTitle = "Amazon ₹500 Gift Card",
     voucherPrice = "0.015 ETH",
+    voucherImage,
     onClose
 }: BuyVoucherModalProps) {
 
@@ -56,8 +59,17 @@ export default function BuyVoucherModal({
                             <p><strong>Seller:</strong> 0xAbc...123</p>
                             <p><strong>Expiry:</strong> 30 Sep 2025</p>
 
-                            <div className="voucher-image blurred">
-                                <p>Voucher image is blurred</p>
+                            <div className="modal-voucher-preview">
+                                <VoucherImage
+                                    src={voucherImage || "/img/blank_coupon.png"}
+                                    alt={voucherTitle || "Voucher"}
+                                    className="modal-voucher-image"
+                                    allowUnblur={false}
+                                    forceBlurred={true}
+                                />
+                                <p className="voucher-preview-note">
+                                    🔒 Voucher image will be revealed after payment
+                                </p>
                             </div>
 
                             <p><strong>Price:</strong> {voucherPrice}</p>
@@ -90,8 +102,17 @@ export default function BuyVoucherModal({
                         <>
                             <h3>Payment Successful</h3>
 
-                            <div className="voucher-image">
-                                <p>Unblurred Voucher Image</p>
+                            <div className="modal-voucher-reveal">
+                                <VoucherImage
+                                    src={voucherImage || "/img/blank_coupon.png"}
+                                    alt={voucherTitle || "Voucher"}
+                                    className="modal-voucher-image"
+                                    allowUnblur={true}
+                                    forceBlurred={false}
+                                />
+                                <p className="voucher-reveal-note">
+                                    ✅ Click on the voucher image above to reveal the details
+                                </p>
                             </div>
 
                             <p><strong>Coupon Code:</strong> AMAZON-XYZ-123</p>

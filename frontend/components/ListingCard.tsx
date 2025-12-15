@@ -1,5 +1,4 @@
 import BuyVoucherModal from "./BuyVoucherModal";
-import VoucherImage from "./VoucherImage";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 interface ListingCardProps {
@@ -10,7 +9,8 @@ interface ListingCardProps {
     price: string;
     verified: boolean;
     id?: string | number;
-    image?: string;
+    logo?: string;
+    voucherImage?: string;
 }
 
 export default function ListingCard({
@@ -21,7 +21,8 @@ export default function ListingCard({
     price,
     verified,
     id,
-    image
+    logo,
+    voucherImage
 }: ListingCardProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -31,12 +32,14 @@ export default function ListingCard({
     return (
         <div className="listing-card">
 
-            {/* Voucher Image */}
-            <VoucherImage
-                src={image}
-                alt={title}
-                className="listing-image"
-            />
+            {/* Voucher Logo */}
+            <div className="voucher-logo-container">
+                <img
+                    src={logo || "/img/blank_coupon.png"}
+                    alt={`${title} logo`}
+                    className="voucher-logo"
+                />
+            </div>
 
             {/* Discount Badge */}
             {discount && (
@@ -80,6 +83,7 @@ export default function ListingCard({
                     voucherId={id}
                     voucherTitle={title}
                     voucherPrice={price}
+                    voucherImage={voucherImage}
                     onClose={() => setIsModalOpen(false)}
                 />,
                 document.body

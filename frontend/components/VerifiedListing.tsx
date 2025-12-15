@@ -1,4 +1,4 @@
-import VoucherImage from "./VoucherImage";
+
 
 export default function VerifiedListing() {
   return (
@@ -10,12 +10,14 @@ export default function VerifiedListing() {
         <div className="listing-grid">
           {/* Card 1 */}
           <article className="listing-card">
-            {/* Voucher Image */}
-            <VoucherImage
-              src="./img/blank-coupon.png"
-              alt="Amazon Gift Voucher"
-              className="listing-image"
-            />
+            {/* Voucher Logo */}
+            <div className="voucher-logo-container">
+              <img
+                src="/img/blank_coupon.png"
+                alt="Amazon Gift Voucher logo"
+                className="voucher-logo"
+              />
+            </div>
 
             <div className="listing-header">
               <h3 className="voucher-name">Amazon Gift Voucher</h3>
@@ -37,12 +39,14 @@ export default function VerifiedListing() {
 
           {/* Card 2 */}
           <article className="listing-card">
-            {/* Voucher Image */}
-            <VoucherImage
-              src="./img/blank-coupon.png"
-              alt="Swiggy Food Coupon"
-              className="listing-image"
-            />
+            {/* Voucher Logo */}
+            <div className="voucher-logo-container">
+              <img
+                src="/img/blank_coupon.png"
+                alt="Swiggy Food Coupon logo"
+                className="voucher-logo"
+              />
+            </div>
 
             <div className="listing-header">
               <h3 className="voucher-name">Swiggy Food Coupon</h3>
@@ -64,12 +68,14 @@ export default function VerifiedListing() {
 
           {/* Card 3 */}
           <article className="listing-card">
-            {/* Voucher Image */}
-            <VoucherImage
-              src="./img/blank-coupon.png"
-              alt="Myntra Fashion Voucher"
-              className="listing-image"
-            />
+            {/* Voucher Logo */}
+            <div className="voucher-logo-container">
+              <img
+                src="/img/blank_coupon.png"
+                alt="Myntra Fashion Voucher logo"
+                className="voucher-logo"
+              />
+            </div>
 
             <div className="listing-header">
               <h3 className="voucher-name">Myntra Fashion Voucher</h3>
@@ -91,12 +97,14 @@ export default function VerifiedListing() {
 
           {/* Card 4 */}
           <article className="listing-card">
-            {/* Voucher Image */}
-            <VoucherImage
-              src="./img/blank-coupon.png"
-              alt="MakeMyTrip Travel Credit"
-              className="listing-image"
-            />
+            {/* Voucher Logo */}
+            <div className="voucher-logo-container">
+              <img
+                src="/img/blank_coupon.png"
+                alt="MakeMyTrip Travel Credit logo"
+                className="voucher-logo"
+              />
+            </div>
 
             <div className="listing-header">
               <h3 className="voucher-name">MakeMyTrip Travel Credit</h3>

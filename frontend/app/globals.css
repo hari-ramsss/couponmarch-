@@ -3220,14 +3220,14 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  z-index: 3;
+  z-index: 5;
 }
 
 .listing-card .verified-badge {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  z-index: 3;
+  z-index: 4;
 }
 
 /* ===
@@ -3295,5 +3295,472 @@
   .loading-spinner {
     width: 30px;
     height: 30px;
+  }
+}
+
+/* =====
+===== IMAGE BLUR UTILITIES ========== */
+.image-blur-light {
+  filter: blur(2px);
+  transition: filter 0.3s ease;
+}
+
+.image-blur-medium {
+  filter: blur(5px);
+  transition: filter 0.3s ease;
+}
+
+.image-blur-heavy {
+  filter: blur(10px);
+  transition: filter 0.3s ease;
+}
+
+.image-blur-secure {
+  filter: blur(8px) brightness(0.7);
+  transition: filter 0.3s ease;
+}
+
+/* Hover to unblur */
+.image-blur-hover:hover {
+  filter: blur(0px);
+}
+
+/* Blur with overlay for security */
+.image-secure-blur {
+  position: relative;
+  filter: blur(6px);
+}
+
+.image-secure-blur::after {
+  content: "🔒 Purchase to view";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Conditional blur based on verification status */
+.voucher-image-unverified {
+  filter: blur(4px) grayscale(50%);
+}
+
+.voucher-image-verified {
+  filter: none;
+}
+
+/* Progressive blur reveal */
+.image-progressive-blur {
+  filter: blur(8px);
+  transition: filter 0.5s ease;
+}
+
+.image-progressive-blur.revealed {
+  filter: blur(0px);
+}
+
+/*
+ ========== VOUCHER IMAGE BLUR STYLES ========== */
+.voucher-image-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+.voucher-image-container .loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--muted-gray);
+  border-top: 3px solid var(--bold-teal);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.voucher-blur-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.1) 50%,
+      rgba(0, 0, 0, 0.3) 100%);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.voucher-blur-overlay:hover {
+  background: linear-gradient(135deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.05) 50%,
+      rgba(0, 0, 0, 0.2) 100%);
+}
+
+.voucher-reveal-content {
+  text-align: center;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  user-select: none;
+}
+
+.voucher-reveal-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.voucher-reveal-text {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+/* Responsive adjustments for voucher blur */
+@media (max-width: 767px) {
+  .voucher-reveal-icon {
+    font-size: 2rem;
+  }
+
+  .voucher-reveal-text {
+    font-size: 0.75rem;
+  }
+}
+
+/* 
+========== VOUCHER LOGO STYLES ========== */
+.voucher-logo-container {
+  width: 100%;
+  height: 200px;
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 3px solid var(--pure-black);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  background-color: var(--off-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.voucher-logo {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.voucher-logo-container:hover .voucher-logo {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Add a subtle pattern overlay */
+.voucher-logo-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px);
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .voucher-logo-container {
+    height: 180px;
+  }
+}
+
+/* ==========MODAL VOUCHER IMAGE STYLES========== */
+.modal-voucher-preview,
+.modal-voucher-reveal {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.modal-voucher-image {
+  width: 100%;
+  max-width: 400px;
+  height: 250px;
+  margin: 0 auto 1rem auto;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 4px solid var(--pure-black);
+  box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.voucher-preview-note {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted-gray);
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background-color: var(--off-white);
+  border: 2px solid var(--pure-black);
+  border-radius: 0.5rem;
+  display: inline-block;
+}
+
+.voucher-reveal-note {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bold-teal);
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background-color: rgba(0, 199, 177, 0.1);
+  border: 2px solid var(--bold-teal);
+  border-radius: 0.5rem;
+  display: inline-block;
+}
+
+@media (max-width: 767px) {
+  .modal-voucher-image {
+    height: 200px;
+  }
+
+  .voucher-preview-note,
+  .voucher-reveal-note {
+    font-size: 0.8125rem;
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+/* ========== FORCE BLURRED VOUCHER STYLES ========== */
+.voucher-blur-overlay.force-blurred {
+  background: linear-gradient(135deg,
+      rgba(58, 58, 58, 0.4) 0%,
+      rgba(58, 58, 58, 0.2) 50%,
+      rgba(58, 58, 58, 0.4) 100%);
+  cursor: not-allowed;
+}
+
+.voucher-blur-overlay.force-blurred .voucher-reveal-icon {
+  color: var(--muted-gray);
+}
+
+.voucher-blur-overlay.force-blurred .voucher-reveal-text {
+  color: var(--muted-gray);
+}
+
+/*==========DUAL UPLOAD PREVIEW STYLES==========*/
+.logo-preview {
+  height: 160px;
+  background: linear-gradient(135deg, var(--off-white) 0%, #f8f8f8 100%);
+}
+
+.voucher-preview {
+  height: 220px;
+  background: linear-gradient(135deg, var(--sunny-yellow) 0%, #ffe066 100%);
+  border-color: var(--bold-teal);
+}
+
+.voucher-preview img {
+  border-radius: 0.5rem;
+}
+
+.upload-description {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  color: var(--muted-gray);
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 767px) {
+  .logo-preview {
+    height: 140px;
+  }
+
+  .voucher-preview {
+    height: 180px;
+  }
+}
+
+/* 
+========== BANNER DISPLAY AND CLOSE BUTTON STYLES ========== */
+.logo-banner-display {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem 0;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: var(--off-white);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.banner-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: var(--punchy-red);
+  color: white;
+  border: 2px solid var(--pure-black);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.remove-image-btn:hover {
+  background-color: #d32f2f;
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.banner-filename {
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pure-black);
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid #e0e0e0;
+}
+
+.remove-preview-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background-color: var(--punchy-red);
+  color: white;
+  border: 2px solid var(--pure-black);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  z-index: 10;
+}
+
+.remove-preview-btn:hover {
+  background-color: #d32f2f;
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Fix overlapping issues - override existing styles */
+.upload-section {
+  padding: 2rem !important;
+  margin-bottom: 2rem !important;
+  position: relative;
+  z-index: 1;
+}
+
+.form-group {
+  margin-bottom: 2rem;
+  clear: both;
+}
+
+.image-preview {
+  margin: 1.5rem 0;
+  clear: both;
+}
+
+.preview-container {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  .logo-banner-display {
+    max-width: 100%;
+  }
+
+  .banner-image {
+    height: 100px;
+  }
+
+  .remove-image-btn,
+  .remove-preview-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8125rem;
+  }
+
+  .upload-section {
+    padding: 1.5rem;
+  }
+}
+
+/* ======
+==== ADDITIONAL SPACING FIXES ========== */
+.sell-top-section {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+}
+
+.voucher-info-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.sell-top-section .upload-section {
+  flex: 0 0 420px;
+  margin-bottom: 0 !important;
+}
+
+@media (max-width: 1023px) {
+  .sell-top-section {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .sell-top-section .upload-section {
+    flex: none;
+    width: 100%;
   }
 }

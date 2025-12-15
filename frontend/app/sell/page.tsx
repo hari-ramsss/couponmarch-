@@ -9,14 +9,74 @@ import Footer from "@/components/Footer";
 export default function Sell() {
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
+
+    // Form state
+    const [formData, setFormData] = useState({
+        title: "",
+        type: "Gift Card",
+        brand: "",
+        code: "",
+        value: "",
+        discount: "",
+        expiryDate: "",
+        terms: "",
+        price: "",
+        logo: "",
+        voucherImage: ""
+    });
+
     const handleConnectWallet = () => {
         // Mock wallet connection - replace with actual wallet integration
         setWalletAddress("0x1234...5678");
     };
 
+    const handleInputChange = (field: string, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleLogoUpload = (logoUrl: string) => {
+        setFormData(prev => ({
+            ...prev,
+            logo: logoUrl
+        }));
+    };
+
+    const handleVoucherImageUpload = (imageUrl: string) => {
+        setFormData(prev => ({
+            ...prev,
+            voucherImage: imageUrl
+        }));
+    };
+
     const handleSubmitListing = () => {
-        // Handle listing submission
-        console.log("Submitting listing...");
+        // Validate required fields
+        if (!formData.title || !formData.brand || !formData.code || !formData.value || !formData.price) {
+            alert("Please fill in all required fields");
+            return;
+        }
+
+        // Add voucher to marketplace
+
+
+        // Reset form
+        setFormData({
+            title: "",
+            type: "Gift Card",
+            brand: "",
+            code: "",
+            value: "",
+            discount: "",
+            expiryDate: "",
+            terms: "",
+            price: "",
+            logo: "",
+            voucherImage: ""
+        });
+
+        alert("Voucher listed successfully! Check the marketplace to see your listing.");
     };
 
     return (
@@ -112,7 +172,10 @@ export default function Sell() {
                         </div>
                     </div>
 
-                    <UploadSection />
+                    <UploadSection
+                        onLogoUpload={handleLogoUpload}
+                        onVoucherImageUpload={handleVoucherImageUpload}
+                    />
                 </div>
 
                 {/* Bottom Section: Price */}
@@ -124,7 +187,7 @@ export default function Sell() {
                     />
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </div>
     )
 }
