@@ -14,7 +14,7 @@ import { parseTokenAmount } from "@/lib/contracts-instance";
 export default function Sell() {
     const router = useRouter();
     const { wallet, ensureSepolia } = useWallet();
-    
+
     // Form state
     const [voucherTitle, setVoucherTitle] = useState("");
     const [voucherType, setVoucherType] = useState("Gift Card");
@@ -40,6 +40,30 @@ export default function Sell() {
         setVoucherImage(imageUrl);
     };
 
+    // Helper function to validate and parse expiry date
+    const parseExpiryTimestamp = (dateString: string): bigint => {
+        if (!dateString) {
+            return BigInt(0); // No expiry
+        }
+
+        const expiryDate = new Date(dateString);
+        const currentTime = new Date();
+
+        // Validate date is valid
+        if (isNaN(expiryDate.getTime())) {
+            throw new Error('Invalid expiry date format');
+        }
+
+        // Validate date is in the future (at least 1 hour buffer)
+        const minFutureTime = new Date(currentTime.getTime() + 60 * 60 * 1000); // 1 hour from now
+        if (expiryDate <= minFutureTime) {
+            throw new Error('Expiry date must be at least 1 hour in the future');
+        }
+
+        // Convert to Unix timestamp
+        return BigInt(Math.floor(expiryDate.getTime() / 1000));
+    };
+
     const handleSubmitListing = async () => {
         if (!wallet.signer) {
             alert('Please connect your wallet first');
@@ -47,8 +71,15 @@ export default function Sell() {
         }
 
         // Validate required fields
-        if (!voucherCode || !price || !voucherTitle || !brandName || !voucherValue) {
-            setError('Voucher code, price, title, brand name, and value are required');
+        if (!voucherCode || !price) {
+            setError('Voucher code and price are required');
+            return;
+        }
+
+        // Validate price is a positive number
+        const priceNum = parseFloat(price);
+        if (isNaN(priceNum) || priceNum <= 0) {
+            setError('Price must be a positive number');
             return;
         }
 
@@ -89,17 +120,11 @@ export default function Sell() {
             // Parse price to wei
             const priceAmount = await parseTokenAmount(wallet.provider!, price);
 
-            // Parse expiry timestamp
-            let expiryTimestamp = 0n;
-            if (expiryDate) {
-                expiryTimestamp = BigInt(Math.floor(new Date(expiryDate).getTime() / 1000));
-                if (expiryTimestamp <= BigInt(Math.floor(Date.now() / 1000))) {
-                    throw new Error('Expiry date must be in the future');
-                }
-            }
+            // Parse expiry timestamp using helper function
+            const expiryTimestamp = parseExpiryTimestamp(expiryDate);
 
             // Parse voucher value (optional)
-            const valueAmount = voucherValue ? BigInt(voucherValue.replace(/\D/g, '')) : 0n;
+            const valueAmount = voucherValue ? BigInt(voucherValue.replace(/\D/g, '')) : BigInt(0);
 
             // AI initial proof hash (placeholder - in production this would come from AI validation)
             const aiInitialProofHash = ethers.keccak256(ethers.toUtf8Bytes(`proof_${voucherCode}_${Date.now()}`));
@@ -116,12 +141,12 @@ export default function Sell() {
             );
 
             setSuccess('Transaction submitted. Waiting for confirmation...');
-            
+
             const receipt = await tx.wait();
             const listingId = receipt.logs[0]?.args?.[0] || 'unknown';
 
             setSuccess(`Listing created successfully! Listing ID: ${listingId}`);
-            
+
             // Redirect to marketplace after 3 seconds
             setTimeout(() => {
                 router.push('/marketplace');
@@ -256,8 +281,11 @@ export default function Sell() {
                                 value={expiryDate}
                                 onChange={(e) => setExpiryDate(e.target.value)}
                                 disabled={isSubmitting}
-                                min={new Date().toISOString().split('T')[0]}
+                                min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]} // Tomorrow minimum
                             />
+                            <small style={{ display: 'block', marginTop: '0.5rem', color: '#666' }}>
+                                Leave empty for no expiry. If set, must be at least 24 hours in the future.
+                            </small>
                         </div>
 
                         {/* Terms & Conditions */}

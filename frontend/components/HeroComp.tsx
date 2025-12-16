@@ -1,4 +1,5 @@
 
+import Link from "next/link";
 
 export default function HeroComp() {
     return (
@@ -10,7 +11,9 @@ export default function HeroComp() {
                 <p className="hero-subtitle">
                     Powered by AI validation and blockchain escrow for 100% safe transactions.
                 </p>
-                <button className="hero-cta-btn">Explore the Marketplace</button>
+                <Link href="/marketplace" className="hero-cta-btn">
+                    Explore the Marketplace
+                </Link>
             </div>
         </section>
     )

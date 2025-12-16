@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useWallet } from "@/contexts/WalletContext";
 import { getMneeBalance, formatTokenAmount } from "@/lib/contracts-instance";
 
@@ -65,30 +66,30 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                 <ul className="nav-links">
                     {pageType != 'home' && (
                         <li>
-                            <a href="/" className="nav-link">
+                            <Link href="/" className="nav-link">
                                 Home
-                            </a>
+                            </Link>
                         </li>
                     )}
                     <li>
-                        <a href="/marketplace" className="nav-link">
+                        <Link href="/marketplace" className="nav-link">
                             MarketPlace
-                        </a>
+                        </Link>
                     </li>
                     <li>
-                        <a href="/sell" className="nav-link">
+                        <Link href="/sell" className="nav-link">
                             Sell
-                        </a>
+                        </Link>
                     </li>
                     <li>
-                        <a href="/about" className="nav-link">
+                        <Link href="/about" className="nav-link">
                             About
-                        </a>
+                        </Link>
                     </li>
                     <li>
-                        <a href="/contact" className="nav-link">
+                        <Link href="/contact" className="nav-link">
                             contact
-                        </a>
+                        </Link>
                     </li>
                 </ul>
 
