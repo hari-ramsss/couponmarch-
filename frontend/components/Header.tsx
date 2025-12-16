@@ -184,7 +184,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                             />
                             <button
                                 type="button"
-                                className="nav-search-btn"
+                                className="search-btn"
                             >
                                 🔍
                             </button>

@@ -34,7 +34,7 @@ export default function VerifiedListing() {
               Price: <strong>0.015 ETH</strong>
             </p>
 
-            <button type="button" className="view-buy-btn">View / Buy</button>
+            <button type="button" className="verified-buy-btn">View / Buy</button>
           </article>
 
           {/* Card 2 */}
@@ -63,7 +63,7 @@ export default function VerifiedListing() {
               Price: <strong>0.008 ETH</strong>
             </p>
 
-            <button type="button" className="view-buy-btn">View / Buy</button>
+            <button type="button" className="verified-buy-btn">View / Buy</button>
           </article>
 
           {/* Card 3 */}
@@ -92,7 +92,7 @@ export default function VerifiedListing() {
               Price: <strong>0.010 ETH</strong>
             </p>
 
-            <button type="button" className="view-buy-btn">View / Buy</button>
+            <button type="button" className="verified-buy-btn">View / Buy</button>
           </article>
 
           {/* Card 4 */}
@@ -121,7 +121,7 @@ export default function VerifiedListing() {
               Price: <strong>0.02 ETH</strong>
             </p>
 
-            <button type="button" className="view-buy-btn">View / Buy</button>
+            <button type="button" className="verified-buy-btn">View / Buy</button>
           </article>
 
         </div>
