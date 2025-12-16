@@ -24,6 +24,8 @@ export default function ListingDetailPage() {
     const [allowanceWei, setAllowanceWei] = useState<bigint>(BigInt(0));
     const [isProcessing, setIsProcessing] = useState(false);
     const [txStatus, setTxStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+    // Moved up so it's always called in the same order
+    const [priceFormatted, setPriceFormatted] = useState<string>("0");
 
     // Fetch listing data
     useEffect(() => {
@@ -69,6 +71,17 @@ export default function ListingDetailPage() {
         const interval = setInterval(fetchListing, 10000); // Refresh every 10 seconds
         return () => clearInterval(interval);
     }, [wallet.provider, listingId, wallet.address]);
+
+    // Moved this effect up so it's not after early returns
+    useEffect(() => {
+        async function fetchFormattedPrice() {
+            if (wallet.provider && listing) {
+                const formatted = await formatListingPrice(wallet.provider, listing.price);
+                setPriceFormatted(formatted);
+            }
+        }
+        fetchFormattedPrice();
+    }, [wallet.provider, listing]);
 
     const handleApprove = async () => {
         if (!wallet.signer || !listing) {
@@ -267,19 +280,6 @@ export default function ListingDetailPage() {
         );
     }
 
-    // Format price for display
-    const [priceFormatted, setPriceFormatted] = useState<string>("0");
-    
-    useEffect(() => {
-        async function fetchFormattedPrice() {
-            if (wallet.provider && listing) {
-                const formatted = await formatListingPrice(wallet.provider, listing.price);
-                setPriceFormatted(formatted);
-            }
-        }
-        fetchFormattedPrice();
-    }, [wallet.provider, listing]);
-
     const isBuyer = wallet.address?.toLowerCase() === listing.buyer?.toLowerCase();
     const isSeller = wallet.address?.toLowerCase() === listing.seller.toLowerCase();
     
@@ -429,4 +429,3 @@ export default function ListingDetailPage() {
         </div>
     );
 }
-
