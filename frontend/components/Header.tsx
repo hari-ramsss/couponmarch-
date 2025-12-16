@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useWallet } from "@/contexts/WalletContext";
 import { getMneeBalance, formatTokenAmount } from "@/lib/contracts-instance";
@@ -11,8 +11,10 @@ interface HeaderProps {
 
 export default function Header({ pageType = 'home' }: HeaderProps) {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mneeBalance, setMneeBalance] = useState<string | null>(null);
     const { wallet, connect, disconnect, ensureSepolia, isLoading } = useWallet();
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
 
     // Fetch MNEE balance when wallet is connected
     useEffect(() => {
@@ -52,7 +54,56 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
 
     const handleDisconnectWallet = () => {
         disconnect();
+        setIsMobileMenuOpen(false); // Close mobile menu when disconnecting
     };
+
+    // Handle mobile menu toggle
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    // Close mobile menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+
+        if (isMobileMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isMobileMenuOpen]);
+
+    // Close mobile menu on navigation
+    const handleNavClick = () => {
+        setIsMobileMenuOpen(false);
+    };
+
+    // Handle keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && isMobileMenuOpen) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+
+        if (isMobileMenuOpen) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isMobileMenuOpen]);
 
     // Function to get user profile picture (placeholder for future implementation)
     const getUserProfilePicture = () => {
@@ -66,64 +117,81 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
     };
 
     return (
-        <header className="header">
-            <nav className="nav-container">
-                {/* Logo */}
-                <h1 className="nav-logo">
-                    CouponMarchè
-                </h1>
+        <>
+            <header className="header">
+                <nav className="nav-container">
+                    {/* Mobile Hamburger Menu Button */}
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={toggleMobileMenu}
+                        aria-label="Toggle mobile menu"
+                    >
+                        <div className={`hamburger ${isMobileMenuOpen ? 'hamburger-open' : ''}`}>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
 
-                {/* Navigation Links */}
-                <ul className="nav-links">
-                    {pageType != 'home' && (
+                    {/* Logo */}
+                    <h1 className="nav-logo">
+                        <Link href="/" onClick={handleNavClick}>
+                            CouponMarchè
+                        </Link>
+                    </h1>
+
+                    {/* Desktop Navigation Links */}
+                    <ul className="nav-links">
+                        {pageType != 'home' && (
+                            <li>
+                                <Link href="/" className="nav-link">
+                                    Home
+                                </Link>
+                            </li>
+                        )}
                         <li>
-                            <Link href="/" className="nav-link">
-                                Home
+                            <Link href="/marketplace" className="nav-link">
+                                MarketPlace
                             </Link>
                         </li>
-                    )}
-                    <li>
-                        <Link href="/marketplace" className="nav-link">
-                            MarketPlace
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="/sell" className="nav-link">
-                            Sell
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="/about" className="nav-link">
-                            About
-                        </Link>
-                    </li>
-                    <li>
-                        <Link href="/contact" className="nav-link">
-                            contact
-                        </Link>
-                    </li>
-                </ul>
+                        <li>
+                            <Link href="/sell" className="nav-link">
+                                Sell
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/about" className="nav-link">
+                                About
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/contact" className="nav-link">
+                                Contact
+                            </Link>
+                        </li>
+                    </ul>
 
-                {/* Conditional Right Section based on page type */}
-                {pageType === 'marketplace' ? (
-                    /* Marketplace: Search Bar */
-                    <form className="nav-form">
-                        <input
-                            type="text"
-                            placeholder="Search vouchers..."
-                            className={`nav-search ${isSearchExpanded ? 'nav-search-expanded' : ''}`}
-                            onFocus={() => setIsSearchExpanded(true)}
-                            onBlur={() => setIsSearchExpanded(false)}
-                        />
-                        <button
-                            type="button"
-                            className="nav-search-btn"
-                        >
-                            🔍
-                        </button>
-                    </form>
-                ) : (
-                    /* Home: Wallet Profile */
+                    {/* Conditional Right Section based on page type */}
+                    {pageType === 'marketplace' ? (
+                        /* Marketplace: Search Bar (Desktop only) */
+                        <form className="nav-form">
+                            <input
+                                type="text"
+                                placeholder="Search vouchers..."
+                                className={`nav-search ${isSearchExpanded ? 'nav-search-expanded' : ''}`}
+                                onFocus={() => setIsSearchExpanded(true)}
+                                onBlur={() => setIsSearchExpanded(false)}
+                            />
+                            <button
+                                type="button"
+                                className="nav-search-btn"
+                            >
+                                🔍
+                            </button>
+                        </form>
+                    ) : null}
+
+                    {/* Wallet Profile (Always show on desktop, hidden on mobile) */}
                     <div className="nav-wallet-section">
                         {wallet.isConnected && wallet.address ? (
                             /* Connected Wallet */
@@ -161,8 +229,84 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                             </div>
                         )}
                     </div>
-                )}
-            </nav>
-        </header>
+                </nav>
+            </header>
+
+            {/* Mobile Side Navigation Menu */}
+            <div className={`mobile-nav-overlay ${isMobileMenuOpen ? 'mobile-nav-overlay-open' : ''}`}>
+                <div
+                    ref={mobileMenuRef}
+                    className={`mobile-nav-panel ${isMobileMenuOpen ? 'mobile-nav-panel-open' : ''}`}
+                >
+                    {/* Mobile Menu Header */}
+                    <div className="mobile-nav-header">
+                        <h2 className="mobile-nav-title">Menu</h2>
+                        <button
+                            className="mobile-nav-close"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            aria-label="Close mobile menu"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    {/* Mobile Navigation Links */}
+                    <nav className="mobile-nav-links">
+                        {pageType != 'home' && (
+                            <Link href="/" className="mobile-nav-link" onClick={handleNavClick}>
+                                🏠 Home
+                            </Link>
+                        )}
+                        <Link href="/marketplace" className="mobile-nav-link" onClick={handleNavClick}>
+                            🛒 MarketPlace
+                        </Link>
+                        <Link href="/sell" className="mobile-nav-link" onClick={handleNavClick}>
+                            💰 Sell
+                        </Link>
+                        <Link href="/about" className="mobile-nav-link" onClick={handleNavClick}>
+                            ℹ️ About
+                        </Link>
+                        <Link href="/contact" className="mobile-nav-link" onClick={handleNavClick}>
+                            📧 Contact
+                        </Link>
+                    </nav>
+
+                    {/* Mobile Wallet Section */}
+                    <div className="mobile-wallet-section">
+                        {wallet.isConnected && wallet.address ? (
+                            /* Connected Wallet in Mobile Menu */
+                            <div className="mobile-wallet-profile">
+                                <div className="mobile-wallet-avatar">
+                                    <img src={getUserProfilePicture()} alt="User Avatar" />
+                                </div>
+                                <div className="mobile-wallet-info">
+                                    <span className="mobile-wallet-address">{formatWalletAddress(wallet.address)}</span>
+                                    {mneeBalance !== null && (
+                                        <span className="mobile-wallet-balance">{mneeBalance} MNEE</span>
+                                    )}
+                                </div>
+                                <button
+                                    className="mobile-disconnect-btn"
+                                    onClick={handleDisconnectWallet}
+                                >
+                                    Disconnect
+                                </button>
+                            </div>
+                        ) : (
+                            /* No Wallet Connected in Mobile Menu */
+                            <div className="mobile-wallet-disconnected">
+                                <button
+                                    onClick={handleConnectWallet}
+                                    className="mobile-connect-btn"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Connecting...' : '🔗 Connect Wallet'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </>
     );
 }
