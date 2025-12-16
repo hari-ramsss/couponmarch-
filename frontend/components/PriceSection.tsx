@@ -1,19 +1,50 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useWallet } from "@/contexts/WalletContext";
+import { getMneeBalance, formatTokenAmount } from "@/lib/contracts-instance";
 
 interface PriceSectionProps {
-  walletAddress?: string | null;
-  onConnectWallet?: () => void;
-  onSubmitListing?: () => void;
+  price: string;
+  onPriceChange: (price: string) => void;
+  onSubmitListing: () => void;
+  isSubmitting: boolean;
 }
 
 export default function PriceSection({
-  walletAddress,
-  onConnectWallet,
-  onSubmitListing
+  price,
+  onPriceChange,
+  onSubmitListing,
+  isSubmitting
 }: PriceSectionProps) {
-  
-  const [price, setPrice] = useState<string>("");
+  const { wallet, connect, ensureSepolia } = useWallet();
+  const [mneeBalance, setMneeBalance] = useState<string>("0");
+
+  // Fetch MNEE balance
+  useEffect(() => {
+    async function fetchBalance() {
+      if (wallet.isConnected && wallet.provider && wallet.address) {
+        try {
+          const balance = await getMneeBalance(wallet.provider, wallet.address);
+          const formatted = await formatTokenAmount(wallet.provider, balance);
+          setMneeBalance(formatted);
+        } catch (error) {
+          console.error('Error fetching MNEE balance:', error);
+        }
+      }
+    }
+    fetchBalance();
+  }, [wallet.isConnected, wallet.provider, wallet.address]);
+
+  const handleConnectWallet = async () => {
+    try {
+      await connect();
+      if (wallet.provider) {
+        await ensureSepolia();
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to connect wallet');
+    }
+  };
 
   return (
     <div className="price-section">
@@ -22,15 +53,19 @@ export default function PriceSection({
 
       {/* Selling Price */}
       <div className="form-group">
-        <label>Selling Price (ETH / MATIC)</label>
+        <label>Selling Price (MNEE)</label>
         <input
           type="text"
-          placeholder="e.g., 0.015"
+          placeholder="e.g., 100"
           value={price}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setPrice(e.target.value)
+            onPriceChange(e.target.value)
           }
+          disabled={!wallet.isConnected || isSubmitting}
         />
+        <small style={{ display: 'block', marginTop: '0.5rem', color: '#666' }}>
+          Enter price in MNEE tokens (not ETH). Gas fees are still paid in ETH.
+        </small>
       </div>
 
       {/* Market Suggestion */}
@@ -44,14 +79,22 @@ export default function PriceSection({
       <div className="wallet-section">
         <label>Your Wallet :</label>
 
-        {walletAddress ? (
-          <p className="wallet-address">{walletAddress} Wallet-Connected ✅</p>
+        {wallet.isConnected && wallet.address ? (
+          <div>
+            <p className="wallet-address">{wallet.address} Wallet-Connected ✅</p>
+            {mneeBalance !== "0" && (
+              <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
+                Your MNEE Balance: {mneeBalance} MNEE
+              </p>
+            )}
+          </div>
         ) : (
           <button 
             className="connect-wallet-btn"
-            onClick={onConnectWallet}
+            onClick={handleConnectWallet}
+            disabled={wallet.isLoading}
           >
-            Connect Wallet
+            {wallet.isLoading ? 'Connecting...' : 'Connect Wallet'}
           </button>
         )}
       </div>
@@ -59,9 +102,12 @@ export default function PriceSection({
       {/* Submit Button */}
       <button 
         className="submit-listing-btn"
-        onClick={onSubmitListing}
+        onClick={() => {
+          onSubmitListing();
+        }}
+        disabled={!wallet.isConnected || isSubmitting || !price}
       >
-        List Voucher for Sale
+        {isSubmitting ? 'Creating Listing...' : 'List Voucher for Sale'}
       </button>
     </div>
   );
