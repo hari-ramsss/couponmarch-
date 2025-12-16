@@ -12,7 +12,7 @@ interface HeaderProps {
 export default function Header({ pageType = 'home' }: HeaderProps) {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [mneeBalance, setMneeBalance] = useState<string | null>(null);
-    const { wallet, connect, ensureSepolia, isLoading } = useWallet();
+    const { wallet, connect, disconnect, ensureSepolia, isLoading } = useWallet();
 
     // Fetch MNEE balance when wallet is connected
     useEffect(() => {
@@ -48,6 +48,17 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
             console.error('Failed to connect wallet:', error);
             alert(error.message || 'Failed to connect wallet');
         }
+    };
+
+    const handleDisconnectWallet = () => {
+        disconnect();
+    };
+
+    // Function to get user profile picture (placeholder for future implementation)
+    const getUserProfilePicture = () => {
+        // In the future, this could fetch from user preferences, ENS avatar, etc.
+        // For now, return default
+        return "./img/blank-user.png";
     };
 
     const formatWalletAddress = (address: string) => {
@@ -122,10 +133,16 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                     {mneeBalance !== null && (
                                         <span className="wallet-balance">{mneeBalance} MNEE</span>
                                     )}
-                                    <span className="wallet-status">Connected</span>
+                                    <button
+                                        className="disconnect-btn"
+                                        onClick={handleDisconnectWallet}
+                                    >
+                                        Disconnect
+                                    </button>
                                 </div>
+                                <div className="wallet-divider"></div>
                                 <div className="wallet-avatar">
-                                    <img src="./img/blank-user.png" alt="User Avatar" />
+                                    <img src={getUserProfilePicture()} alt="User Avatar" />
                                 </div>
                             </div>
                         ) : (
