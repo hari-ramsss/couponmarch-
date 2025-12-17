@@ -223,9 +223,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                 >
                                     {isLoading ? 'Connecting...' : 'Connect Wallet'}
                                 </button>
-                                <div className="wallet-avatar-placeholder">
-                                    <img src="./img/blank-user.png" alt="No wallet connected" />
-                                </div>
+                                
                             </div>
                         )}
                     </div>

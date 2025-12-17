@@ -14,7 +14,7 @@ export default function ListingDetailPage() {
     const router = useRouter();
     const listingId = Number(params.id);
     const { wallet, ensureSepolia } = useWallet();
-    
+
     const [listing, setListing] = useState<ListingData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function ListingDetailPage() {
                 setIsLoading(true);
                 setError(null);
                 const listingData = await getListing(wallet.provider, listingId);
-                
+
                 if (!listingData) {
                     setError('Listing not found');
                     return;
@@ -98,11 +98,11 @@ export default function ListingDetailPage() {
 
             // Parse price amount
             const priceAmount = listing.price;
-            
+
             // Approve escrow to spend tokens
             const tx = await approveMnee(wallet.signer, priceAmount);
             setTxStatus({ type: null, message: 'Transaction submitted. Waiting for confirmation...' });
-            
+
             await tx.wait();
             setTxStatus({ type: 'success', message: 'Approval successful!' });
 
@@ -165,7 +165,7 @@ export default function ListingDetailPage() {
             const escrowContract = getEscrowContract(wallet.signer);
             const tx = await escrowContract.lockPayment(listingId);
             setTxStatus({ type: null, message: 'Transaction submitted. Waiting for confirmation...' });
-            
+
             await tx.wait();
             setTxStatus({ type: 'success', message: 'Payment locked successfully! The seller will now reveal the voucher.' });
 
@@ -198,7 +198,7 @@ export default function ListingDetailPage() {
             const escrowContract = getEscrowContract(wallet.signer);
             const tx = await escrowContract.confirmVoucher(listingId);
             setTxStatus({ type: null, message: 'Transaction submitted...' });
-            
+
             await tx.wait();
             setTxStatus({ type: 'success', message: 'Voucher confirmed! Payment will be released to seller.' });
 
@@ -236,7 +236,7 @@ export default function ListingDetailPage() {
             const escrowContract = getEscrowContract(wallet.signer);
             const tx = await escrowContract.disputeVoucher(listingId, evidenceCID);
             setTxStatus({ type: null, message: 'Dispute submitted...' });
-            
+
             await tx.wait();
             setTxStatus({ type: 'success', message: 'Dispute raised successfully. Admin will review.' });
 
@@ -257,8 +257,10 @@ export default function ListingDetailPage() {
         return (
             <div className="min-h-screen bg-off-white">
                 <Header pageType="marketplace" />
-                <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
-                    <p>Loading listing...</p>
+                <div className="listing-detail-container">
+                    <div className="loading-state">
+                        <p>Loading listing...</p>
+                    </div>
                 </div>
                 <Footer />
             </div>
@@ -269,11 +271,13 @@ export default function ListingDetailPage() {
         return (
             <div className="min-h-screen bg-off-white">
                 <Header pageType="marketplace" />
-                <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>
-                    <p style={{ color: 'red' }}>{error || 'Listing not found'}</p>
-                    <button onClick={() => router.push('/marketplace')} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>
-                        Back to Marketplace
-                    </button>
+                <div className="listing-detail-container">
+                    <div className="error-state">
+                        <p className="error-message">{error || 'Listing not found'}</p>
+                        <button onClick={() => router.push('/marketplace')} className="back-btn">
+                            Back to Marketplace
+                        </button>
+                    </div>
                 </div>
                 <Footer />
             </div>
@@ -282,7 +286,7 @@ export default function ListingDetailPage() {
 
     const isBuyer = wallet.address?.toLowerCase() === listing.buyer?.toLowerCase();
     const isSeller = wallet.address?.toLowerCase() === listing.seller.toLowerCase();
-    
+
     // Compare BigInt values directly
     const needsApproval = allowanceWei < listing.price;
     const hasEnoughBalance = mneeBalanceWei >= listing.price;
@@ -290,73 +294,91 @@ export default function ListingDetailPage() {
     return (
         <div className="min-h-screen bg-off-white">
             <Header pageType="marketplace" />
-            
-            <div className="container" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-                <button onClick={() => router.push('/marketplace')} style={{ marginBottom: '1rem', padding: '0.5rem 1rem' }}>
+
+            <div className="listing-detail-container">
+                <button onClick={() => router.push('/marketplace')} className="back-btn">
                     ← Back to Marketplace
                 </button>
 
-                <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                    <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Listing #{listing.id}</h1>
-                    
-                    <div style={{ marginBottom: '1rem' }}>
-                        <p><strong>Status:</strong> {getStatusLabel(listing.status)}</p>
-                        <p><strong>Seller:</strong> {listing.seller}</p>
+                <div className="listing-detail-card">
+                    <h1 className="listing-detail-title">Listing #{listing.id}</h1>
+
+                    <div className="listing-info-section">
+                        <div className="info-item">
+                            <span className="info-label">Status:</span>
+                            <span className={`status-badge status-${getStatusLabel(listing.status).toLowerCase().replace(' ', '-')}`}>
+                                {getStatusLabel(listing.status)}
+                            </span>
+                        </div>
+                        <div className="info-item">
+                            <span className="info-label">Seller:</span>
+                            <span className="wallet-address-display">{listing.seller}</span>
+                        </div>
                         {listing.buyer && listing.buyer !== '0x0000000000000000000000000000000000000000' && (
-                            <p><strong>Buyer:</strong> {listing.buyer}</p>
+                            <div className="info-item">
+                                <span className="info-label">Buyer:</span>
+                                <span className="wallet-address-display">{listing.buyer}</span>
+                            </div>
                         )}
-                        <p><strong>Partial Code Pattern:</strong> {listing.partialPattern || 'N/A'}</p>
-                        <p><strong>Price:</strong> {priceFormatted} MNEE</p>
+                        <div className="info-item">
+                            <span className="info-label">Partial Code Pattern:</span>
+                            <span className="code-pattern">{listing.partialPattern || 'N/A'}</span>
+                        </div>
+                        <div className="info-item price-item">
+                            <span className="info-label">Price:</span>
+                            <span className="price-display">{priceFormatted} MNEE</span>
+                        </div>
                         {listing.value > BigInt(0) && (
-                            <p><strong>Voucher Value:</strong> {listing.value.toString()}</p>
+                            <div className="info-item">
+                                <span className="info-label">Voucher Value:</span>
+                                <span className="value-display">{listing.value.toString()}</span>
+                            </div>
                         )}
                         {listing.expiryTimestamp > BigInt(0) && (
-                            <p><strong>Expires:</strong> {new Date(Number(listing.expiryTimestamp) * 1000).toLocaleString()}</p>
+                            <div className="info-item">
+                                <span className="info-label">Expires:</span>
+                                <span className="expiry-display">{new Date(Number(listing.expiryTimestamp) * 1000).toLocaleString()}</span>
+                            </div>
                         )}
                     </div>
 
                     {wallet.isConnected && (
-                        <div style={{ marginBottom: '1rem', padding: '1rem', background: '#f5f5f5', borderRadius: '4px' }}>
-                            <p><strong>Your MNEE Balance:</strong> {mneeBalance} MNEE</p>
-                            <p><strong>Current Allowance:</strong> {allowance} MNEE</p>
+                        <div className="wallet-balance-section">
+                            <div className="balance-item">
+                                <span className="balance-label">Your MNEE Balance:</span>
+                                <span className="balance-value">{mneeBalance} MNEE</span>
+                            </div>
+                            <div className="balance-item">
+                                <span className="balance-label">Current Allowance:</span>
+                                <span className="balance-value">{allowance} MNEE</span>
+                            </div>
                             {needsApproval && (
-                                <p style={{ color: 'orange' }}>⚠️ You need to approve MNEE spending first</p>
+                                <div className="warning-message approval-warning">
+                                    ⚠️ You need to approve MNEE spending first
+                                </div>
                             )}
                             {!hasEnoughBalance && (
-                                <p style={{ color: 'red' }}>⚠️ Insufficient MNEE balance</p>
+                                <div className="warning-message balance-warning">
+                                    ⚠️ Insufficient MNEE balance
+                                </div>
                             )}
                         </div>
                     )}
 
                     {txStatus.type && (
-                        <div style={{
-                            padding: '1rem',
-                            marginBottom: '1rem',
-                            borderRadius: '4px',
-                            background: txStatus.type === 'success' ? '#d4edda' : '#f8d7da',
-                            color: txStatus.type === 'success' ? '#155724' : '#721c24'
-                        }}>
+                        <div className={`tx-status ${txStatus.type === 'success' ? 'tx-success' : 'tx-error'}`}>
                             {txStatus.message}
                         </div>
                     )}
 
                     {/* Buyer Actions */}
                     {wallet.isConnected && !isSeller && listing.status === ListingStatus.LISTED && (
-                        <div style={{ marginTop: '2rem' }}>
+                        <div className="buyer-actions">
                             {needsApproval ? (
                                 <button
                                     onClick={handleApprove}
                                     disabled={isProcessing || !hasEnoughBalance}
-                                    style={{
-                                        padding: '0.75rem 1.5rem',
-                                        fontSize: '1rem',
-                                        background: '#F2352B',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: isProcessing ? 'not-allowed' : 'pointer',
-                                        opacity: isProcessing ? 0.6 : 1
-                                    }}
+                                    className={`verified-buy-btn ${isProcessing || !hasEnoughBalance ? 'disabled' : ''}`}
                                 >
                                     {isProcessing ? 'Processing...' : 'Approve MNEE'}
                                 </button>
@@ -364,16 +386,7 @@ export default function ListingDetailPage() {
                                 <button
                                     onClick={handleLockPayment}
                                     disabled={isProcessing || !hasEnoughBalance}
-                                    style={{
-                                        padding: '0.75rem 1.5rem',
-                                        fontSize: '1rem',
-                                        background: '#F2352B',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: isProcessing ? 'not-allowed' : 'pointer',
-                                        opacity: isProcessing ? 0.6 : 1
-                                    }}
+                                    className={`verified-buy-btn premium ${isProcessing || !hasEnoughBalance ? 'disabled' : ''}`}
                                 >
                                     {isProcessing ? 'Processing...' : 'Lock Payment & Buy'}
                                 </button>
@@ -383,34 +396,18 @@ export default function ListingDetailPage() {
 
                     {/* Buyer can confirm or dispute after reveal */}
                     {wallet.isConnected && isBuyer && listing.status === ListingStatus.REVEALED && (
-                        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+                        <div className="confirm-dispute-actions">
                             <button
                                 onClick={handleConfirmVoucher}
                                 disabled={isProcessing}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    fontSize: '1rem',
-                                    background: '#00C7B1',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: isProcessing ? 'not-allowed' : 'pointer'
-                                }}
+                                className={`verified-buy-btn ${isProcessing ? 'disabled' : ''}`}
                             >
                                 Confirm Voucher Valid
                             </button>
                             <button
                                 onClick={handleDisputeVoucher}
                                 disabled={isProcessing}
-                                style={{
-                                    padding: '0.75rem 1.5rem',
-                                    fontSize: '1rem',
-                                    background: '#FF8A2A',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: isProcessing ? 'not-allowed' : 'pointer'
-                                }}
+                                className={`secure-buy-btn ${isProcessing ? 'disabled' : ''}`}
                             >
                                 Dispute Voucher
                             </button>
@@ -418,9 +415,9 @@ export default function ListingDetailPage() {
                     )}
 
                     {!wallet.isConnected && (
-                        <p style={{ marginTop: '1rem', color: '#666' }}>
+                        <div className="connect-wallet-message">
                             Please connect your wallet to interact with this listing.
-                        </p>
+                        </div>
                     )}
                 </div>
             </div>
