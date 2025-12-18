@@ -36,7 +36,7 @@ export default function ListingDetailPage() {
             }
 
             try {
-                setIsLoading(true);
+                //setIsLoading(true); commented this cause it causes sudden page jumps
                 setError(null);
                 const listingData = await getListing(wallet.provider, listingId);
 
