@@ -835,6 +835,62 @@ body.mobile-menu-open {
 .error-state {
   text-align: center;
   padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Page Loading State (Full Screen) */
+.page-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 4rem 2rem;
+  gap: 1.5rem;
+}
+
+.page-loading-state .loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--muted-gray);
+  border-top: 4px solid var(--bold-teal);
+}
+
+.page-loading-state p {
+  color: var(--pure-black);
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-loading-state .loading-subtext {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: var(--muted-gray) !important;
+  opacity: 0.9;
+}
+
+.loading-state .loading-spinner {
+  margin-bottom: 1rem;
+}
+
+.loading-state p {
+  color: var(--muted-gray);
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.loading-subtext {
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  color: var(--muted-gray) !important;
+  opacity: 0.8;
 }
 
 .error-message {
@@ -843,6 +899,26 @@ body.mobile-menu-open {
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
+}
+
+.retry-btn {
+  background-color: var(--bold-teal);
+  color: white;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  margin-top: 1rem;
+}
+
+.retry-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
 }
 
 /* Main Card */
@@ -1065,6 +1141,28 @@ body.mobile-menu-open {
   font-family: var(--font-inter), "Inter", sans-serif;
   font-style: italic;
   margin-top: 2rem;
+}
+
+/* Info Messages */
+.info-message {
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin-top: 2rem;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-weight: 600;
+  border: 3px solid var(--pure-black);
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.seller-message {
+  background-color: var(--sunny-yellow);
+  color: var(--pure-black);
+}
+
+.status-message {
+  background-color: var(--orange-accent);
+  color: white;
 }
 
 /* Responsive Design */
@@ -2506,6 +2604,30 @@ body.mobile-menu-open {
   font-size: 1.125rem;
 }
 
+/* Grid Loading State */
+.grid-loading-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  gap: 1rem;
+}
+
+.grid-loading-state .loading-spinner {
+  width: 32px;
+  height: 32px;
+}
+
+.grid-loading-state p {
+  color: var(--muted-gray);
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+}
+
 /* ========== LISTING CARD STYLES ========== */
 .listing-card {
   background-color: white;
@@ -2523,6 +2645,46 @@ body.mobile-menu-open {
 .listing-card:hover {
   transform: translateY(-4px);
   box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Voucher Logo Container */
+.voucher-logo-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: var(--off-white);
+  border: 2px solid var(--pure-black);
+}
+
+.voucher-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+/* Card Image Loading State */
+.card-image-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--off-white);
+  z-index: 1;
+}
+
+.card-image-loading .loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--muted-gray);
+  border-top: 2px solid var(--bold-teal);
 }
 
 /* Discount Badge */
@@ -2625,6 +2787,16 @@ body.mobile-menu-open {
 .listing-btn:active {
   transform: translateY(0);
   box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Listing Note */
+.listing-note {
+  color: var(--muted-gray);
+  font-size: 0.75rem;
+  text-align: center;
+  margin: 0.5rem 0 0 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  font-style: italic;
 }
 
 /* ========== VERIFIED LISTINGS BUY BUTTON STYLES ========== */

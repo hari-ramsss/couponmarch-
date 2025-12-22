@@ -6,8 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useWallet } from "@/contexts/WalletContext";
 import { getListing, ListingData, formatPrice as formatListingPrice, getStatusLabel, isListingExpired } from "@/lib/marketplace";
-import { getEscrowContract, getMockERC20Contract, approveMnee, getMneeBalance, getMneeAllowance, formatTokenAmount, parseTokenAmount } from "@/lib/contracts-instance";
-import { ListingStatus, ESCROW_ADDRESS } from "@/lib/contracts";
+import { getEscrowContract, approveMnee, getMneeBalance, getMneeAllowance, formatTokenAmount } from "@/lib/contracts-instance";
+import { ListingStatus } from "@/lib/contracts";
 
 export default function ListingDetailPage() {
     const params = useParams();
@@ -16,7 +16,7 @@ export default function ListingDetailPage() {
     const { wallet, ensureSepolia } = useWallet();
 
     const [listing, setListing] = useState<ListingData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [mneeBalance, setMneeBalance] = useState<string>("0");
     const [mneeBalanceWei, setMneeBalanceWei] = useState<bigint>(BigInt(0));
@@ -36,7 +36,8 @@ export default function ListingDetailPage() {
             }
 
             try {
-                //setIsLoading(true); commented this cause it causes sudden page jumps
+                // Disable loading state for testing
+                // setIsLoading(true);
                 setError(null);
                 const listingData = await getListing(wallet.provider, listingId);
 
@@ -63,6 +64,7 @@ export default function ListingDetailPage() {
                 console.error('Error fetching listing:', err);
                 setError(err.message || 'Failed to fetch listing');
             } finally {
+                // Keep loading disabled for testing
                 setIsLoading(false);
             }
         }
@@ -259,6 +261,7 @@ export default function ListingDetailPage() {
                 <Header pageType="marketplace" />
                 <div className="listing-detail-container">
                     <div className="loading-state">
+                        <div className="loading-spinner"></div>
                         <p>Loading listing...</p>
                     </div>
                 </div>
@@ -391,6 +394,19 @@ export default function ListingDetailPage() {
                                     {isProcessing ? 'Processing...' : 'Lock Payment & Buy'}
                                 </button>
                             )}
+                        </div>
+                    )}
+
+                    {/* Show why buttons are not available */}
+                    {wallet.isConnected && isSeller && (
+                        <div className="info-message seller-message">
+                            <p>📝 This is your own listing. You cannot purchase it.</p>
+                        </div>
+                    )}
+
+                    {wallet.isConnected && !isSeller && listing.status !== ListingStatus.LISTED && (
+                        <div className="info-message status-message">
+                            <p>⏳ This listing is not available for purchase (Status: {getStatusLabel(listing.status)})</p>
                         </div>
                     )}
 

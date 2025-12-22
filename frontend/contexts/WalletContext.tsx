@@ -32,7 +32,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     isConnected: false,
     chainId: null,
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Initialize wallet state on mount
@@ -97,7 +97,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const connect = useCallback(async () => {
     try {
       setError(null);
-      setIsLoading(true);
+      // No loading state for testing
+      // setIsLoading(true);
 
       if (!isMetaMaskInstalled()) {
         throw new Error('MetaMask is not installed. Please install MetaMask to continue.');
@@ -117,7 +118,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setError(err.message || 'Failed to connect wallet');
       console.error('Wallet connection error:', err);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   }, []);
 

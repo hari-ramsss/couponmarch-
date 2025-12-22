@@ -30,6 +30,7 @@ export default function ListingCard({
 }: ListingCardProps) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [imageLoading, setImageLoading] = useState(false);
     const router = useRouter();
 
     const handleBuyClick = () => {
@@ -42,6 +43,13 @@ export default function ListingCard({
         }
     };
 
+    const handleImageLoad = () => {
+        setImageLoading(false);
+    };
+
+    const handleImageError = () => {
+        setImageLoading(false);
+    };
 
     return (
         <div className="listing-card">
@@ -52,6 +60,8 @@ export default function ListingCard({
                     src={logo || "/img/blank_coupon.png"}
                     alt={`${title} logo`}
                     className="voucher-logo"
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
                 />
             </div>
 
@@ -88,10 +98,12 @@ export default function ListingCard({
             </p>
 
             {/* CTA Button */}
-            <button className="listing-btn" onClick={handleBuyClick}> Buy </button>
             <button className="listing-btn" onClick={handleViewClick}>
-                View
+                View Details
             </button>
+            <p className="listing-note">
+                Click "View Details" to see buy options and wallet requirements
+            </p>
             {/* Modal Integration - Render at document root */}
             {isModalOpen && typeof document !== 'undefined' && createPortal(
                 <BuyVoucherModal

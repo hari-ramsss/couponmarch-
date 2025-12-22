@@ -1,4 +1,5 @@
 import ListingCard from "./ListingCard";
+import { useState, useEffect } from "react";
 
 interface Listing {
     id: string | number;
@@ -16,6 +17,13 @@ interface ListingsGridProps {
 }
 
 export default function ListingsGrid({ listings }: ListingsGridProps) {
+    const [isRendering, setIsRendering] = useState(false);
+
+    // Disable rendering loading for testing
+    useEffect(() => {
+        setIsRendering(false);
+    }, [listings]);
+
     return (
         <div className="listings-grid">
             {listings && listings.length > 0 ? (
