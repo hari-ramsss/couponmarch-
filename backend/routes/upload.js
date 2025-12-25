@@ -235,4 +235,169 @@ router.post('/metadata', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/upload/voucher-metadata
+ * Upload complete voucher listing metadata to IPFS
+ * This includes all voucher details, images, and validation data
+ */
+router.post('/voucher-metadata', async (req, res) => {
+    try {
+        const { voucherData } = req.body;
+
+        if (!voucherData || typeof voucherData !== 'object') {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid voucher data',
+                message: 'Voucher data must be a valid JSON object'
+            });
+        }
+
+        // Validate required fields
+        const requiredFields = ['title', 'type', 'code', 'price'];
+        const missingFields = requiredFields.filter(field => !voucherData[field]);
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields',
+                message: `Required fields: ${missingFields.join(', ')}`
+            });
+        }
+
+        // Generate partial pattern if not provided
+        let partialPattern = voucherData.partialPattern;
+        if (!partialPattern && voucherData.code) {
+            const code = voucherData.code;
+            const codeLength = code.length;
+            if (codeLength <= 6) {
+                partialPattern = code; // Show full code if short
+            } else {
+                partialPattern = `${code.slice(0, 2)}${'*'.repeat(Math.max(0, codeLength - 6))}${code.slice(-4)}`;
+            }
+        }
+
+        // Create comprehensive voucher metadata
+        const voucherMetadata = {
+            // Basic Information
+            title: voucherData.title,
+            type: voucherData.type,
+            brand: voucherData.brand || '',
+            description: voucherData.description || '',
+
+            // Voucher Details
+            code: voucherData.code, // Full code (will be encrypted/hashed in production)
+            partialPattern: partialPattern || '',
+            value: parseFloat(voucherData.value) || 0,
+            discountPercentage: parseFloat(voucherData.discountPercentage) || 0,
+
+            // Pricing & Expiry
+            price: voucherData.price,
+            currency: voucherData.currency || 'MNEE',
+            expiryDate: voucherData.expiryDate || null,
+            expiryTimestamp: voucherData.expiryTimestamp || 0,
+
+            // Terms & Conditions
+            terms: voucherData.terms || '',
+            usageInstructions: voucherData.usageInstructions || '',
+            restrictions: voucherData.restrictions || '',
+
+            // Images (IPFS hashes)
+            images: {
+                logo: {
+                    original: voucherData.logoOriginal || '',
+                    thumbnail: voucherData.logoThumbnail || ''
+                },
+                voucher: {
+                    original: voucherData.voucherOriginal || '', // Full resolution (for buyers)
+                    blurred: voucherData.voucherBlurred || '',   // Blurred (for marketplace)
+                    thumbnail: voucherData.voucherThumbnail || ''
+                }
+            },
+
+            // Seller Information
+            seller: {
+                address: voucherData.sellerAddress || '',
+                reputation: parseInt(voucherData.sellerReputation) || 0,
+                totalSales: parseInt(voucherData.sellerTotalSales) || 0
+            },
+
+            // Validation & Security
+            validation: {
+                aiInitialProof: voucherData.aiInitialProof || '',
+                validationScore: parseInt(voucherData.validationScore) || 0,
+                validationStatus: voucherData.validationStatus || 'pending',
+                validatedAt: voucherData.validatedAt || null
+            },
+
+            // Blockchain Integration
+            blockchain: {
+                network: voucherData.network || 'sepolia',
+                listingId: voucherData.listingId || null,
+                contractAddress: voucherData.contractAddress || '',
+                transactionHash: voucherData.transactionHash || ''
+            },
+
+            // Platform Metadata
+            platform: {
+                name: 'CouponMarche',
+                version: '1.0',
+                uploadedAt: new Date().toISOString(),
+                lastUpdated: new Date().toISOString(),
+                category: voucherData.category || 'General',
+                tags: Array.isArray(voucherData.tags) ? voucherData.tags : [],
+                featured: Boolean(voucherData.featured)
+            },
+
+            // Analytics & Tracking
+            analytics: {
+                views: 0,
+                favorites: 0,
+                inquiries: 0,
+                createdAt: new Date().toISOString()
+            }
+        };
+
+        // Upload comprehensive metadata to IPFS
+        const metadataUpload = await ipfsService.uploadJSON(voucherMetadata, {
+            name: `voucher-metadata-${voucherData.title?.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}`,
+            customData: {
+                type: 'voucher-listing-metadata',
+                version: '1.0',
+                voucherType: voucherData.type,
+                brand: voucherData.brand,
+                seller: voucherData.sellerAddress,
+                price: voucherData.price,
+                category: voucherData.category || 'General'
+            }
+        });
+
+        console.log(`✅ Voucher metadata uploaded successfully: ${metadataUpload.ipfsHash}`);
+
+        res.json({
+            success: true,
+            data: {
+                ipfsHash: metadataUpload.ipfsHash,
+                gatewayUrl: metadataUpload.gatewayUrl,
+                size: metadataUpload.pinSize,
+                metadata: voucherMetadata,
+                summary: {
+                    title: voucherMetadata.title,
+                    type: voucherMetadata.type,
+                    price: voucherMetadata.price,
+                    hasImages: !!(voucherMetadata.images.logo.original || voucherMetadata.images.voucher.original),
+                    validationStatus: voucherMetadata.validation.validationStatus
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Voucher metadata upload error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to upload voucher metadata',
+            message: error.message
+        });
+    }
+});
+
 module.exports = router;

@@ -16,7 +16,7 @@ export default function PriceSection({
   onSubmitListing,
   isSubmitting
 }: PriceSectionProps) {
-  const { wallet, connect, ensureSepolia } = useWallet();
+  const { wallet, connect, ensureSepolia, isLoading } = useWallet();
   const [mneeBalance, setMneeBalance] = useState<string>("0");
 
   // Fetch MNEE balance
@@ -89,18 +89,18 @@ export default function PriceSection({
             )}
           </div>
         ) : (
-          <button 
+          <button
             className="connect-wallet-btn"
             onClick={handleConnectWallet}
-            disabled={wallet.isLoading}
+            disabled={isLoading}
           >
-            {wallet.isLoading ? 'Connecting...' : 'Connect Wallet'}
+            {isLoading ? 'Connecting...' : 'Connect Wallet'}
           </button>
         )}
       </div>
 
       {/* Submit Button */}
-      <button 
+      <button
         className="submit-listing-btn"
         onClick={() => {
           onSubmitListing();
