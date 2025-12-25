@@ -7,9 +7,12 @@ import Header from "@/components/Header";
 import PriceSection from "@/components/PriceSection";
 import UploadSection from "@/components/UploadSection";
 import Footer from "@/components/Footer";
+import BackendStatus from "@/components/BackendStatus";
 import { useWallet } from "@/contexts/WalletContext";
 import { getMarketplaceContract } from "@/lib/contracts-instance";
 import { parseTokenAmount } from "@/lib/contracts-instance";
+
+import { buildApiUrl, API_CONFIG } from "@/lib/config";
 
 export default function Sell() {
     const router = useRouter();
@@ -25,19 +28,19 @@ export default function Sell() {
     const [expiryDate, setExpiryDate] = useState("");
     const [terms, setTerms] = useState("");
     const [price, setPrice] = useState("");
-    const [logo, setLogo] = useState("");
-    const [voucherImage, setVoucherImage] = useState("");
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [voucherImageFile, setVoucherImageFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
 
-    const handleLogoUpload = (logoUrl: string) => {
-        setLogo(logoUrl);
+    const handleLogoUpload = (file: File | null) => {
+        setLogoFile(file);
     };
 
-    const handleVoucherImageUpload = (imageUrl: string) => {
-        setVoucherImage(imageUrl);
+    const handleVoucherImageUpload = (file: File | null) => {
+        setVoucherImageFile(file);
     };
 
     // Helper function to validate and parse expiry date
@@ -83,7 +86,6 @@ export default function Sell() {
             return;
         }
 
-
         try {
             setIsSubmitting(true);
             setError(null);
@@ -92,23 +94,109 @@ export default function Sell() {
             // Ensure on Sepolia
             await ensureSepolia();
 
-            // Create metadata hash (in production, this would be an IPFS CID hash)
-            // For now, we'll hash the voucher data
-            const metadataString = JSON.stringify({
+            // Step 1: Upload logo to IPFS (if provided)
+            let logoData = null;
+            if (logoFile) {
+                setSuccess('Uploading logo to IPFS...');
+
+                const logoFormData = new FormData();
+                logoFormData.append('logo', logoFile);
+
+                const logoResponse = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_LOGO), {
+                    method: 'POST',
+                    body: logoFormData,
+                });
+
+                const logoResult = await logoResponse.json();
+                if (!logoResult.success) {
+                    throw new Error(logoResult.error || 'Failed to upload logo');
+                }
+
+                logoData = logoResult.data;
+            }
+
+            // Step 2: Upload voucher image to IPFS (if provided)
+            let voucherImageData = null;
+            if (voucherImageFile) {
+                setSuccess('Uploading voucher image to IPFS...');
+
+                const imageFormData = new FormData();
+                imageFormData.append('voucherImage', voucherImageFile);
+
+                const imageResponse = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_VOUCHER_IMAGE), {
+                    method: 'POST',
+                    body: imageFormData,
+                });
+
+                const imageResult = await imageResponse.json();
+                if (!imageResult.success) {
+                    throw new Error(imageResult.error || 'Failed to upload voucher image');
+                }
+
+                voucherImageData = imageResult.data;
+            }
+
+            // Step 3: Create and upload metadata to IPFS
+            setSuccess('Creating voucher metadata...');
+
+            // Prepare voucher metadata for IPFS upload
+            const voucherMetadata = {
                 title: voucherTitle,
                 type: voucherType,
                 brand: brandName,
+                description: `${voucherType} from ${brandName || 'Unknown Brand'}`,
                 code: voucherCode,
                 value: voucherValue,
-                discount: discountPercentage,
+                discountPercentage: discountPercentage,
+                price: price,
+                currency: 'MNEE',
+                expiryDate: expiryDate,
+                expiryTimestamp: expiryDate ? Math.floor(new Date(expiryDate).getTime() / 1000) : 0,
                 terms: terms,
-                logo: logo,
-                voucherImage: voucherImage
+                sellerAddress: wallet.address,
+                network: 'sepolia',
+
+                // IPFS Image Data (now uploaded)
+                logoOriginal: logoData?.original?.ipfsHash || '',
+                logoThumbnail: logoData?.thumbnail?.ipfsHash || '',
+                voucherOriginal: voucherImageData?.original?.ipfsHash || '',
+                voucherBlurred: voucherImageData?.blurred?.ipfsHash || '',
+                voucherThumbnail: voucherImageData?.thumbnail?.ipfsHash || '',
+
+                // Validation data
+                validationStatus: 'pending',
+                aiInitialProof: `proof_${voucherCode}_${Date.now()}`,
+                category: voucherType,
+                tags: [voucherType, brandName].filter(Boolean)
+            };
+
+            setSuccess('Uploading metadata to IPFS...');
+
+            // Upload metadata to IPFS via backend
+            const metadataResponse = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_METADATA), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ voucherData: voucherMetadata }),
             });
-            const metadataHash = ethers.keccak256(ethers.toUtf8Bytes(metadataString));
+
+            const metadataResult = await metadataResponse.json();
+
+            if (!metadataResult.success) {
+                throw new Error(metadataResult.error || 'Failed to upload metadata to IPFS');
+            }
+
+            setSuccess('Creating blockchain listing...');
+
+            // Use IPFS hash as metadata hash for blockchain
+            const ipfsHash = metadataResult.data.ipfsHash;
+
+            // Convert IPFS hash to bytes32 for smart contract
+            // IPFS hashes are base58 encoded, we need to convert to bytes32
+            const metadataHashBytes32 = ethers.keccak256(ethers.toUtf8Bytes(ipfsHash));
 
             // Create partial code pattern (mask most of the code for security)
-            // Show first 2 and last 4 characters, mask the rest
             const codeLength = voucherCode.length;
             let partialPattern = "";
             if (codeLength <= 6) {
@@ -126,13 +214,13 @@ export default function Sell() {
             // Parse voucher value (optional)
             const valueAmount = voucherValue ? BigInt(voucherValue.replace(/\D/g, '')) : BigInt(0);
 
-            // AI initial proof hash (placeholder - in production this would come from AI validation)
-            const aiInitialProofHash = ethers.keccak256(ethers.toUtf8Bytes(`proof_${voucherCode}_${Date.now()}`));
+            // AI initial proof hash (use the one from metadata)
+            const aiInitialProofHash = ethers.keccak256(ethers.toUtf8Bytes(voucherMetadata.aiInitialProof));
 
             // Create listing on blockchain
             const marketplaceContract = getMarketplaceContract(wallet.signer);
             const tx = await marketplaceContract.createListing(
-                metadataHash,
+                metadataHashBytes32, // Use bytes32 hash for smart contract
                 partialPattern,
                 priceAmount,
                 valueAmount,
@@ -145,7 +233,7 @@ export default function Sell() {
             const receipt = await tx.wait();
             const listingId = receipt.logs[0]?.args?.[0] || 'unknown';
 
-            setSuccess(`Listing created successfully! Listing ID: ${listingId}`);
+            setSuccess(`Listing created successfully! Listing ID: ${listingId}. IPFS Hash: ${ipfsHash}`);
 
             // Redirect to marketplace after 3 seconds
             setTimeout(() => {
@@ -163,6 +251,7 @@ export default function Sell() {
 
     return (
         <div className="min-h-screen bg-off-white">
+            <BackendStatus />
             <Header pageType="sell" />
 
             {/* Sell Page Header */}

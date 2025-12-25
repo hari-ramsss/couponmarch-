@@ -2,6 +2,8 @@
 
 Backend service for CouponMarche voucher marketplace with IPFS storage integration.
 
+> **🚀 New**: Now uses **Pinata REST API with JWT authentication** instead of the Pinata SDK for better reliability and performance. See `PINATA_REST_API.md` for migration details.
+
 ## Features
 
 - 📁 **File Upload & Processing**: Image optimization, thumbnails, blurring
@@ -27,19 +29,21 @@ cp .env.example .env
 ```
 
 Required environment variables:
-- `PINATA_API_KEY` - Your Pinata API key
-- `PINATA_SECRET_API_KEY` - Your Pinata secret key
-- `PINATA_JWT` - Your Pinata JWT token (optional)
+- `PINATA_JWT` - Your Pinata JWT token (recommended)
 
-### 3. Get Pinata Credentials
+Optional (legacy):
+- `PINATA_API_KEY` - Your Pinata API key (deprecated)
+- `PINATA_SECRET_API_KEY` - Your Pinata secret key (deprecated)
+
+### 3. Get Pinata JWT Token
 
 1. Sign up at [Pinata.cloud](https://pinata.cloud)
-2. Go to API Keys section
-3. Create new API key with permissions:
-   - `pinFileToIPFS`
-   - `pinJSONToIPFS`
-   - `unpin`
-   - `userPinList`
+2. Go to [API Keys section](https://app.pinata.cloud/keys)
+3. Create new API key
+4. **Copy the JWT token** (not the API key/secret)
+5. Add JWT to your `.env` file
+
+**Note**: The new implementation uses JWT authentication via REST API instead of the Pinata SDK for better reliability.
 
 ### 4. Start Development Server
 
@@ -231,8 +235,8 @@ backend/
 ### Testing
 
 ```bash
-# Run tests (when implemented)
-npm test
+# Test Pinata REST API implementation
+node test-pinata-rest.js
 
 # Test file upload
 curl -X POST http://localhost:5000/api/upload/voucher-logo \
@@ -248,8 +252,7 @@ Set these in production:
 ```bash
 NODE_ENV=production
 PORT=5000
-PINATA_API_KEY=your_production_key
-PINATA_SECRET_API_KEY=your_production_secret
+PINATA_JWT=your_production_jwt_token
 FRONTEND_URL=https://your-frontend-domain.com
 ```
 
@@ -273,9 +276,10 @@ FRONTEND_URL=https://your-frontend-domain.com
 ### Common Issues
 
 1. **IPFS Upload Fails**
-   - Check Pinata credentials
-   - Verify API key permissions
+   - Check Pinata JWT token in `.env`
+   - Verify JWT token is valid and not expired
    - Check network connectivity
+   - Run `node test-pinata-rest.js` to diagnose
 
 2. **File Too Large**
    - Increase `MAX_FILE_SIZE` in `.env`

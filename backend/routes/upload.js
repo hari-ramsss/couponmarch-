@@ -14,25 +14,37 @@ router.post('/voucher-logo', uploadSingle('logo'), requireFile, async (req, res)
         const { uploadId } = req;
 
         console.log(`📤 Processing logo upload: ${uploadId}`);
+        console.log(`📄 File details:`, {
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            bufferLength: file.buffer?.length
+        });
 
         // Validate image
+        console.log('🔍 Validating image...');
         const validation = await imageProcessingService.validateImage(file.buffer);
         if (!validation.isValid) {
+            console.log('❌ Image validation failed:', validation.errors);
             return res.status(400).json({
                 success: false,
                 error: 'Invalid image',
                 details: validation.errors
             });
         }
+        console.log('✅ Image validation passed');
 
         // Process image (optimize and create thumbnail)
+        console.log('🖼️ Processing image...');
         const processedImages = await imageProcessingService.processImage(file.buffer, {
             createThumbnail: true,
             createBlurred: false, // Logo doesn't need blurring
             optimize: true
         });
+        console.log('✅ Image processing completed');
 
         // Upload original to IPFS
+        console.log('📤 Uploading original to IPFS...');
         const originalUpload = await ipfsService.uploadFile(processedImages.images.original, {
             name: `logo-${uploadId}`,
             type: 'voucher-logo',
@@ -42,8 +54,10 @@ router.post('/voucher-logo', uploadSingle('logo'), requireFile, async (req, res)
                 category: 'logo'
             }
         });
+        console.log('✅ Original uploaded to IPFS:', originalUpload.ipfsHash);
 
         // Upload thumbnail to IPFS
+        console.log('📤 Uploading thumbnail to IPFS...');
         const thumbnailUpload = await ipfsService.uploadFile(processedImages.images.thumbnail, {
             name: `logo-thumb-${uploadId}`,
             type: 'voucher-logo-thumbnail',
@@ -75,11 +89,13 @@ router.post('/voucher-logo', uploadSingle('logo'), requireFile, async (req, res)
         });
 
     } catch (error) {
-        console.error('Logo upload error:', error);
+        console.error('❌ Logo upload error:', error);
+        console.error('❌ Error stack:', error.stack);
         res.status(500).json({
             success: false,
             error: 'Failed to upload logo',
-            message: error.message
+            message: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 });

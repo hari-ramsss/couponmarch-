@@ -2,8 +2,8 @@
 import { useState } from "react";
 
 interface UploadSectionProps {
-    onLogoUpload?: (logoUrl: string) => void;
-    onVoucherImageUpload?: (imageUrl: string) => void;
+    onLogoUpload?: (logoFile: File | null) => void;
+    onVoucherImageUpload?: (imageFile: File | null) => void;
 }
 
 export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: UploadSectionProps) {
@@ -11,42 +11,48 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
     const [voucherImagePreview, setVoucherImagePreview] = useState<string | null>(null);
     const [logoFileName, setLogoFileName] = useState<string>("");
     const [voucherImageFileName, setVoucherImageFileName] = useState<string>("");
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [voucherImageFile, setVoucherImageFile] = useState<File | null>(null);
 
-    // Handle logo upload
-    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handle logo file selection (NO IPFS upload yet)
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setLogoFileName(file.name);
+        if (!file) return;
 
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const logoUrl = reader.result as string;
-                setLogoPreview(logoUrl);
+        setLogoFileName(file.name);
+        setLogoFile(file);
 
-                if (onLogoUpload) {
-                    onLogoUpload(logoUrl);
-                }
-            };
-            reader.readAsDataURL(file);
+        // Create preview for immediate display (local only)
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setLogoPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        // Pass file to parent component (not IPFS data)
+        if (onLogoUpload) {
+            onLogoUpload(file);
         }
     };
 
-    // Handle voucher image upload
-    const handleVoucherImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handle voucher image file selection (NO IPFS upload yet)
+    const handleVoucherImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setVoucherImageFileName(file.name);
+        if (!file) return;
 
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const imageUrl = reader.result as string;
-                setVoucherImagePreview(imageUrl);
+        setVoucherImageFileName(file.name);
+        setVoucherImageFile(file);
 
-                if (onVoucherImageUpload) {
-                    onVoucherImageUpload(imageUrl);
-                }
-            };
-            reader.readAsDataURL(file);
+        // Create preview for immediate display (local only)
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setVoucherImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        // Pass file to parent component (not IPFS data)
+        if (onVoucherImageUpload) {
+            onVoucherImageUpload(file);
         }
     };
 
@@ -54,8 +60,9 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
     const handleRemoveLogo = () => {
         setLogoPreview(null);
         setLogoFileName("");
+        setLogoFile(null);
         if (onLogoUpload) {
-            onLogoUpload("");
+            onLogoUpload(null);
         }
     };
 
@@ -63,8 +70,9 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
     const handleRemoveVoucherImage = () => {
         setVoucherImagePreview(null);
         setVoucherImageFileName("");
+        setVoucherImageFile(null);
         if (onVoucherImageUpload) {
-            onVoucherImageUpload("");
+            onVoucherImageUpload(null);
         }
     };
 
@@ -78,6 +86,8 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
                 <label>Upload Voucher Logo/Banner</label>
                 <p className="upload-description">
                     Upload a logo or banner image that will represent your voucher in marketplace listings.
+                    <br />
+                    <strong>Note:</strong> Files will be uploaded to IPFS only when you submit the listing.
                 </p>
                 {!logoPreview ? (
                     <input
@@ -96,6 +106,7 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
                             ✕
                         </button>
                         <p className="banner-filename">{logoFileName}</p>
+                        <p className="file-status">📁 Ready for upload</p>
                     </div>
                 )}
             </div>
@@ -105,6 +116,8 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
                 <label>Upload Actual Voucher Image</label>
                 <p className="upload-description">
                     Upload the actual voucher/coupon image that buyers will see after purchase.
+                    <br />
+                    <strong>Note:</strong> Files will be uploaded to IPFS only when you submit the listing.
                 </p>
                 <input
                     type="file"
@@ -130,12 +143,16 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
                     <p className="preview-note">
                         This image will be revealed to buyers after purchase
                     </p>
+                    <p className="file-status">📁 Ready for upload</p>
                 </div>
             )}
 
-            {/* AI Validation Notice */}
-            <div className="ai-validation-note">
-                <p>⚡ Both your voucher logo and actual voucher image will be validated by AI before being approved for listing.</p>
+            {/* Upload Notice */}
+            <div className="upload-notice">
+                <p>📦 <strong>Upload Process:</strong></p>
+                <p>• Images are previewed locally (not uploaded yet)</p>
+                <p>• All files will be uploaded to IPFS when you click "List Voucher for Sale"</p>
+                <p>• AI validation will occur during the upload process</p>
             </div>
 
         </div>

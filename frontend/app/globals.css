@@ -4575,3 +4575,141 @@ body.mobile-menu-open {
     height: 40px;
   }
 }
+
+/* Upload Section Enhancements */
+.file-upload-container {
+  position: relative;
+}
+
+.upload-progress {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #e3f2fd;
+  border: 2px solid #1976d2;
+  border-radius: 4px;
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.upload-progress p {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-error {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #ffebee;
+  border: 2px solid #d32f2f;
+  border-radius: 4px;
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.upload-error p {
+  margin: 0;
+}
+
+.upload-status {
+  margin-top: 0.5rem;
+  color: #1976d2;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.file-upload-container input[type="file"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.remove-image-btn:disabled,
+.remove-preview-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* AI Validation Notice Enhancement */
+.ai-validation-note {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f3e5f5;
+  border: 2px solid #9c27b0;
+  border-radius: 4px;
+}
+
+.ai-validation-note p {
+  margin: 0.5rem 0;
+  color: #6a1b9a;
+  font-weight: 500;
+}
+
+.ai-validation-note p:first-child {
+  margin-top: 0;
+}
+
+.ai-validation-note p:last-child {
+  margin-bottom: 0;
+}
+
+/* Backend Status Component */
+.backend-status {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 1000;
+  border: 2px solid;
+}
+
+.backend-status.online {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+.backend-status.offline {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #f44336;
+}
+
+.backend-status.checking {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-color: #2196f3;
+}
+/* Upload Notice Styles */
+.upload-notice {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #f0f8ff;
+    border: 2px solid #4a90e2;
+    border-radius: 4px;
+}
+
+.upload-notice p {
+    margin: 0.5rem 0;
+    color: #2c5aa0;
+    font-weight: 500;
+}
+
+.upload-notice p:first-child {
+    margin-top: 0;
+    font-weight: 600;
+}
+
+.upload-notice p:last-child {
+    margin-bottom: 0;
+}
+
+.file-status {
+    margin-top: 0.5rem;
+    color: #4a90e2;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
