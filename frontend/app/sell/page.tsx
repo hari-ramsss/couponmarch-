@@ -13,6 +13,7 @@ import { getMarketplaceContract } from "@/lib/contracts-instance";
 import { parseTokenAmount } from "@/lib/contracts-instance";
 
 import { buildApiUrl, API_CONFIG } from "@/lib/config";
+import { storeIPFSHashMapping } from "@/lib/ipfs-resolver";
 
 export default function Sell() {
     const router = useRouter();
@@ -232,6 +233,11 @@ export default function Sell() {
 
             const receipt = await tx.wait();
             const listingId = receipt.logs[0]?.args?.[0] || 'unknown';
+
+            // Store IPFS hash mapping for future retrieval
+            if (listingId !== 'unknown') {
+                storeIPFSHashMapping(Number(listingId), ipfsHash);
+            }
 
             setSuccess(`Listing created successfully! Listing ID: ${listingId}. IPFS Hash: ${ipfsHash}`);
 

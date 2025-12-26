@@ -1,6 +1,8 @@
 import { Contract, BrowserProvider } from 'ethers';
 import { getMarketplaceContract } from './contracts-instance';
 import { ListingStatus, STATUS_LABELS } from './contracts';
+import { enhanceListingWithMetadata, EnhancedListingData } from './ipfs-metadata';
+import { resolveIPFSHash, batchResolveIPFSHashes } from './ipfs-resolver';
 
 /**
  * Marketplace listing data structure
@@ -20,8 +22,31 @@ export interface ListingData {
 }
 
 /**
- * Fetch a single listing by ID
+ * Fetch a single listing by ID with IPFS metadata
  */
+export async function getEnhancedListing(
+  provider: BrowserProvider,
+  listingId: number
+): Promise<EnhancedListingData | null> {
+  try {
+    // Get basic listing data from blockchain
+    const listing = await getListing(provider, listingId);
+    if (!listing) {
+      return null;
+    }
+
+    // Resolve IPFS hash for metadata
+    const ipfsHash = await resolveIPFSHash(provider, listingId);
+
+    // Enhance with IPFS metadata
+    const enhancedListing = await enhanceListingWithMetadata(listing, provider, ipfsHash || undefined);
+
+    return enhancedListing;
+  } catch (error) {
+    console.error(`Error fetching enhanced listing ${listingId}:`, error);
+    return null;
+  }
+}
 export async function getListing(
   provider: BrowserProvider,
   listingId: number
@@ -29,7 +54,7 @@ export async function getListing(
   try {
     const contract = getMarketplaceContract(provider);
     const result = await contract.getListing(listingId);
-    
+
     return {
       id: Number(result[0]),
       seller: result[1],
@@ -86,15 +111,39 @@ export async function getAllListings(
 }
 
 /**
- * Fetch active (LISTED) listings only
+ * Fetch all active listings with IPFS metadata
  */
-export async function getActiveListings(
+export async function getEnhancedActiveListings(
   provider: BrowserProvider
-): Promise<ListingData[]> {
-  const allListings = await getAllListings(provider);
-  return allListings.filter(
-    (listing) => listing.status === ListingStatus.LISTED
-  );
+): Promise<EnhancedListingData[]> {
+  try {
+    console.log("getEnhancedActiveListings called");
+
+    // Get basic listings from blockchain
+    const basicListings = await getActiveListings(provider);
+
+    if (basicListings.length === 0) {
+      return [];
+    }
+
+    // Batch resolve IPFS hashes
+    const listingIds = basicListings.map(listing => listing.id);
+    const ipfsHashes = await batchResolveIPFSHashes(provider, listingIds);
+
+    // Enhance all listings with metadata
+    const enhancedListings = await Promise.all(
+      basicListings.map(async (listing) => {
+        const ipfsHash = ipfsHashes[listing.id];
+        return await enhanceListingWithMetadata(listing, provider, ipfsHash || undefined);
+      })
+    );
+
+    console.log("Enhanced listings fetched:", enhancedListings);
+    return enhancedListings;
+  } catch (error) {
+    console.error('Error fetching enhanced active listings:', error);
+    return [];
+  }
 }
 
 /**
@@ -108,7 +157,7 @@ export function getStatusLabel(status: ListingStatus): string {
  * Check if listing is expired
  */
 export function isListingExpired(listing: ListingData): boolean {
-  if (listing.expiryTimestamp === 0n) {
+  if (listing.expiryTimestamp === BigInt(0)) {
     return false; // No expiry
   }
   return BigInt(Math.floor(Date.now() / 1000)) >= listing.expiryTimestamp;
@@ -133,7 +182,7 @@ export function onListingCreated(
   callback: (listingId: number, seller: string, price: bigint) => void
 ): () => void {
   const contract = getMarketplaceContract(provider);
-  
+
   const filter = contract.filters.ListingCreated();
   contract.on(filter, (id, seller, price, ...args) => {
     callback(Number(id), seller, price);
@@ -144,3 +193,15 @@ export function onListingCreated(
   };
 }
 
+
+/**
+ * Fetch active (LISTED) listings only (basic version)
+ */
+export async function getActiveListings(
+  provider: BrowserProvider
+): Promise<ListingData[]> {
+  const allListings = await getAllListings(provider);
+  return allListings.filter(
+    (listing) => listing.status === ListingStatus.LISTED
+  );
+}

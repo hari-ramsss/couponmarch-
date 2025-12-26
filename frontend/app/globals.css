@@ -4683,33 +4683,182 @@ body.mobile-menu-open {
   color: #1976d2;
   border-color: #2196f3;
 }
+
 /* Upload Notice Styles */
 .upload-notice {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: #f0f8ff;
-    border: 2px solid #4a90e2;
-    border-radius: 4px;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f0f8ff;
+  border: 2px solid #4a90e2;
+  border-radius: 4px;
 }
 
 .upload-notice p {
-    margin: 0.5rem 0;
-    color: #2c5aa0;
-    font-weight: 500;
+  margin: 0.5rem 0;
+  color: #2c5aa0;
+  font-weight: 500;
 }
 
 .upload-notice p:first-child {
-    margin-top: 0;
-    font-weight: 600;
+  margin-top: 0;
+  font-weight: 600;
 }
 
 .upload-notice p:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .file-status {
-    margin-top: 0.5rem;
-    color: #4a90e2;
-    font-weight: 500;
-    font-size: 0.9rem;
+  margin-top: 0.5rem;
+  color: #4a90e2;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Enhanced Listing Card Styles */
+.voucher-preview-container {
+  position: relative;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.voucher-preview {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  filter: blur(2px);
+}
+
+.preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.category-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background: #4a90e2;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.status-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.status-badge.status-approved {
+  background: #4caf50;
+  color: white;
+}
+
+.status-badge.status-pending {
+  background: #ff9800;
+  color: white;
+}
+
+.status-badge.status-rejected {
+  background: #f44336;
+  color: white;
+}
+
+.listing-brand {
+  margin: 0.5rem 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.listing-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+
+.tag {
+  background: #f0f0f0;
+  color: #333;
+  padding: 0.2rem 0.4rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tag-more {
+  background: #e0e0e0;
+  color: #666;
+  padding: 0.2rem 0.4rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Enhanced Listing Card Layout */
+.listing-card {
+  position: relative;
+  min-height: 400px;
+  /* Increased for more content */
+}
+
+.listing-card .voucher-logo-container {
+  height: 80px;
+  /* Slightly smaller to make room for preview */
+}
+
+/* Loading States for IPFS Content */
+.ipfs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  color: #666;
+  font-style: italic;
+}
+
+.ipfs-error {
+  padding: 0.5rem;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin: 0.5rem 0;
+}
+
+/* Fallback styles when IPFS data is not available */
+.listing-card.basic-mode {
+  opacity: 0.8;
+}
+
+.listing-card.basic-mode::after {
+  content: "Basic Info";
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: #666;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
 }

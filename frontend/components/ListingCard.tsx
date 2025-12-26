@@ -8,25 +8,33 @@ import { useRouter } from "next/navigation";
 interface ListingCardProps {
     title: string;
     type: string;
+    brand?: string;
     discount?: string;
     description: string;
     price: string;
     verified: boolean;
     id?: string | number;
-    logo?: string;
-    voucherImage?: string;
+    category?: string;
+    tags?: string[];
+    logoUrl?: string;
+    previewImageUrl?: string;
+    status?: string;
 }
 
 export default function ListingCard({
     title,
     type,
+    brand,
     discount,
     description,
     price,
     verified,
     id,
-    logo,
-    voucherImage
+    category,
+    tags,
+    logoUrl,
+    previewImageUrl,
+    status
 }: ListingCardProps) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,13 +65,34 @@ export default function ListingCard({
             {/* Voucher Logo */}
             <div className="voucher-logo-container">
                 <img
-                    src={logo || "/img/blank_coupon.png"}
+                    src={logoUrl || "/img/blank_coupon.png"}
                     alt={`${title} logo`}
                     className="voucher-logo"
                     onLoad={handleImageLoad}
                     onError={handleImageError}
                 />
             </div>
+
+            {/* Preview Image (if available) */}
+            {previewImageUrl && (
+                <div className="voucher-preview-container">
+                    <img
+                        src={previewImageUrl}
+                        alt={`${title} preview`}
+                        className="voucher-preview"
+                    />
+                    <div className="preview-overlay">
+                        <span>Preview (Blurred)</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Category Badge */}
+            {category && (
+                <div className="category-badge">
+                    {category}
+                </div>
+            )}
 
             {/* Discount Badge */}
             {discount && (
@@ -79,8 +108,22 @@ export default function ListingCard({
                 </div>
             )}
 
+            {/* Status Badge */}
+            {status && status !== 'pending' && (
+                <div className={`status-badge status-${status.toLowerCase()}`}>
+                    {status}
+                </div>
+            )}
+
             {/* Title */}
             <h3 className="listing-title">{title}</h3>
+
+            {/* Brand */}
+            {brand && (
+                <p className="listing-brand">
+                    <strong>Brand:</strong> {brand}
+                </p>
+            )}
 
             {/* Voucher Type */}
             <p className="listing-type">
@@ -91,6 +134,20 @@ export default function ListingCard({
             <p className="listing-description">
                 {description}
             </p>
+
+            {/* Tags */}
+            {tags && tags.length > 0 && (
+                <div className="listing-tags">
+                    {tags.slice(0, 3).map((tag, index) => (
+                        <span key={index} className="tag">
+                            {tag}
+                        </span>
+                    ))}
+                    {tags.length > 3 && (
+                        <span className="tag-more">+{tags.length - 3}</span>
+                    )}
+                </div>
+            )}
 
             {/* Price Display */}
             <p className="listing-price">
@@ -104,13 +161,14 @@ export default function ListingCard({
             <p className="listing-note">
                 Click "View Details" to see buy options and wallet requirements
             </p>
+
             {/* Modal Integration - Render at document root */}
             {isModalOpen && typeof document !== 'undefined' && createPortal(
                 <BuyVoucherModal
                     voucherId={id}
                     voucherTitle={title}
                     voucherPrice={price}
-                    voucherImage={voucherImage}
+                    voucherImage={previewImageUrl}
                     onClose={() => setIsModalOpen(false)}
                 />,
                 document.body

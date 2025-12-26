@@ -7,7 +7,8 @@ import FilterSidebar from "@/components/FilterSidebar";
 import ListingsGrid from "@/components/ListingsGrid";
 import Footer from "@/components/Footer";
 import { useWallet } from "@/contexts/WalletContext";
-import { getActiveListings, ListingData, formatPrice, getStatusLabel, isListingExpired } from "@/lib/marketplace";
+import { getEnhancedActiveListings } from "@/lib/marketplace";
+import { EnhancedListingData } from "@/lib/ipfs-metadata";
 
 export default function Marketplace() {
     const categories = [
@@ -37,30 +38,34 @@ export default function Marketplace() {
                 // Disable loading state for testing
                 // setIsLoading(true);
                 setError(null);
-                const activeListings = await getActiveListings(wallet.provider);
 
-                // Transform blockchain data to UI format
-                const transformedListings = await Promise.all(
-                    activeListings.map(async (listing: ListingData) => {
-                        const priceFormatted = await formatPrice(wallet.provider!, listing.price);
-                        const expired = isListingExpired(listing);
+                // Fetch enhanced listings with IPFS metadata
+                const enhancedListings = await getEnhancedActiveListings(wallet.provider);
 
-                        return {
-                            id: listing.id,
-                            title: `Voucher #${listing.id}`,
-                            type: listing.partialPattern || "Voucher",
-                            discount: listing.value > BigInt(0) ? `${listing.value.toString()} value` : undefined,
-                            description: `Partial code: ${listing.partialPattern || "N/A"}`,
-                            price: `${priceFormatted} MNEE`,
-                            verified: listing.aiInitialProof !== "0x0000000000000000000000000000000000000000000000000000000000000000",
-                            status: getStatusLabel(listing.status),
-                            seller: listing.seller,
-                            expiryTimestamp: listing.expiryTimestamp,
-                            expired,
-                            listingData: listing, // Store full listing data
-                        };
-                    })
-                );
+                // Transform enhanced data to UI format
+                const transformedListings = enhancedListings.map((listing: EnhancedListingData) => {
+                    return {
+                        id: listing.id,
+                        title: listing.title, // Rich title from IPFS
+                        type: listing.metadata?.type || listing.partialPattern || "Voucher",
+                        brand: listing.brand, // Brand from IPFS
+                        discount: listing.metadata?.discountPercentage ?
+                            `${listing.metadata.discountPercentage}% off` :
+                            (listing.value > BigInt(0) ? `${listing.value.toString()} value` : undefined),
+                        description: listing.description, // Rich description from IPFS
+                        price: listing.formattedPrice, // Already formatted
+                        verified: listing.isVerified,
+                        status: listing.metadata?.validation?.validationStatus || 'pending',
+                        seller: listing.seller,
+                        expiryTimestamp: listing.expiryTimestamp,
+                        expired: listing.isExpired,
+                        category: listing.category, // Category from IPFS
+                        tags: listing.tags, // Tags from IPFS
+                        logoUrl: listing.logoUrl, // Logo image URL
+                        previewImageUrl: listing.previewImageUrl, // Blurred voucher image
+                        listingData: listing, // Store full enhanced listing data
+                    };
+                });
 
                 // Filter out expired listings
                 const validListings = transformedListings.filter((l: any) => !l.expired);

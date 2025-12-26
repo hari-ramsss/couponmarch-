@@ -5,11 +5,17 @@ interface Listing {
     id: string | number;
     title: string;
     type: string;
+    brand?: string;
     discount?: string;
     description: string;
     price: string;
     verified: boolean;
-    image?: string;
+    status?: string;
+    category?: string;
+    tags?: string[];
+    logoUrl?: string;
+    previewImageUrl?: string;
+    image?: string; // Keep for backward compatibility
 }
 
 interface ListingsGridProps {

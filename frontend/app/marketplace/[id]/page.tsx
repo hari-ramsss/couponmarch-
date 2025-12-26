@@ -5,9 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useWallet } from "@/contexts/WalletContext";
-import { getListing, ListingData, formatPrice as formatListingPrice, getStatusLabel, isListingExpired } from "@/lib/marketplace";
+import { getEnhancedListing } from "@/lib/marketplace";
+import { getListing, formatPrice as formatListingPrice, getStatusLabel, isListingExpired } from "@/lib/marketplace";
 import { getEscrowContract, approveMnee, getMneeBalance, getMneeAllowance, formatTokenAmount } from "@/lib/contracts-instance";
 import { ListingStatus } from "@/lib/contracts";
+import { EnhancedListingData } from "@/lib/ipfs-metadata";
 
 export default function ListingDetailPage() {
     const params = useParams();
@@ -15,7 +17,7 @@ export default function ListingDetailPage() {
     const listingId = Number(params.id);
     const { wallet, ensureSepolia } = useWallet();
 
-    const [listing, setListing] = useState<ListingData | null>(null);
+    const [listing, setListing] = useState<EnhancedListingData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [mneeBalance, setMneeBalance] = useState<string>("0");
@@ -39,7 +41,9 @@ export default function ListingDetailPage() {
                 // Disable loading state for testing
                 // setIsLoading(true);
                 setError(null);
-                const listingData = await getListing(wallet.provider, listingId);
+
+                // Fetch enhanced listing with IPFS metadata
+                const listingData = await getEnhancedListing(wallet.provider, listingId);
 
                 if (!listingData) {
                     setError('Listing not found');
@@ -172,7 +176,7 @@ export default function ListingDetailPage() {
             setTxStatus({ type: 'success', message: 'Payment locked successfully! The seller will now reveal the voucher.' });
 
             // Refresh listing
-            const updatedListing = await getListing(wallet.provider!, listingId);
+            const updatedListing = await getEnhancedListing(wallet.provider!, listingId);
             if (updatedListing) {
                 setListing(updatedListing);
             }
@@ -205,7 +209,7 @@ export default function ListingDetailPage() {
             setTxStatus({ type: 'success', message: 'Voucher confirmed! Payment will be released to seller.' });
 
             // Refresh listing
-            const updatedListing = await getListing(wallet.provider!, listingId);
+            const updatedListing = await getEnhancedListing(wallet.provider!, listingId);
             if (updatedListing) {
                 setListing(updatedListing);
             }
@@ -243,7 +247,7 @@ export default function ListingDetailPage() {
             setTxStatus({ type: 'success', message: 'Dispute raised successfully. Admin will review.' });
 
             // Refresh listing
-            const updatedListing = await getListing(wallet.provider!, listingId);
+            const updatedListing = await getEnhancedListing(wallet.provider!, listingId);
             if (updatedListing) {
                 setListing(updatedListing);
             }
