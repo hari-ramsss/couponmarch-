@@ -12,12 +12,13 @@ interface ListingCardProps {
     discount?: string;
     description: string;
     price: string;
+    value?: string; // Voucher face value
     verified: boolean;
     id?: string | number;
     category?: string;
     tags?: string[];
     logoUrl?: string;
-    previewImageUrl?: string;
+    previewImageUrl?: string; // Keep for modal, but don't display in card
     status?: string;
 }
 
@@ -28,35 +29,21 @@ export default function ListingCard({
     discount,
     description,
     price,
+    value,
     verified,
     id,
     category,
     tags,
     logoUrl,
-    previewImageUrl,
+    previewImageUrl, // Accept but don't display in card
     status
 }: ListingCardProps) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [imageLoading, setImageLoading] = useState(false);
     const router = useRouter();
 
     const handleBuyClick = () => {
         setIsModalOpen(true);
-    };
-
-    const handleViewClick = () => {
-        if (id) {
-            router.push(`/marketplace/${id}`);
-        }
-    };
-
-    const handleImageLoad = () => {
-        setImageLoading(false);
-    };
-
-    const handleImageError = () => {
-        setImageLoading(false);
     };
 
     return (
@@ -68,24 +55,8 @@ export default function ListingCard({
                     src={logoUrl || "/img/blank_coupon.png"}
                     alt={`${title} logo`}
                     className="voucher-logo"
-                    onLoad={handleImageLoad}
-                    onError={handleImageError}
                 />
             </div>
-
-            {/* Preview Image (if available) */}
-            {previewImageUrl && (
-                <div className="voucher-preview-container">
-                    <img
-                        src={previewImageUrl}
-                        alt={`${title} preview`}
-                        className="voucher-preview"
-                    />
-                    <div className="preview-overlay">
-                        <span>Preview (Blurred)</span>
-                    </div>
-                </div>
-            )}
 
             {/* Category Badge */}
             {category && (
@@ -118,17 +89,29 @@ export default function ListingCard({
             {/* Title */}
             <h3 className="listing-title">{title}</h3>
 
-            {/* Brand */}
-            {brand && (
-                <p className="listing-brand">
-                    <strong>Brand:</strong> {brand}
-                </p>
-            )}
+            {/* Brand & Type Row */}
+            <div className="listing-info-row">
+                {brand && (
+                    <span className="listing-brand">
+                        <strong>{brand}</strong>
+                    </span>
+                )}
+                <span className="listing-type">{type}</span>
+            </div>
 
-            {/* Voucher Type */}
-            <p className="listing-type">
-                <strong>Type:</strong> {type}
-            </p>
+            {/* Value & Price Row */}
+            <div className="listing-value-price-row">
+                {value && (
+                    <div className="voucher-value">
+                        <span className="value-label">Value:</span>
+                        <span className="value-amount">{value}</span>
+                    </div>
+                )}
+                <div className="listing-price">
+                    <span className="price-label">Price:</span>
+                    <span className="price-amount">{price}</span>
+                </div>
+            </div>
 
             {/* Description */}
             <p className="listing-description">
@@ -138,38 +121,48 @@ export default function ListingCard({
             {/* Tags */}
             {tags && tags.length > 0 && (
                 <div className="listing-tags">
-                    {tags.slice(0, 3).map((tag, index) => (
+                    {tags.slice(0, 2).map((tag, index) => (
                         <span key={index} className="tag">
                             {tag}
                         </span>
                     ))}
-                    {tags.length > 3 && (
-                        <span className="tag-more">+{tags.length - 3}</span>
+                    {tags.length > 2 && (
+                        <span className="tag-more">+{tags.length - 2}</span>
                     )}
                 </div>
             )}
 
-            {/* Price Display */}
-            <p className="listing-price">
-                <strong>{price}</strong>
-            </p>
+            {/* Remove the separate price display since it's now in the value-price row */}
 
-            {/* CTA Button */}
-            <button className="listing-btn" onClick={handleViewClick}>
-                View Details
-            </button>
+            {/* CTA Buttons */}
+            <div className="listing-actions">
+                <button className="listing-btn primary" onClick={handleBuyClick}>
+                    Buy Now
+                </button>
+                <button className="listing-btn secondary" onClick={() => {
+                    if (id) {
+                        router.push(`/marketplace/${id}`);
+                    }
+                }}>
+                    View Details
+                </button>
+            </div>
             <p className="listing-note">
-                Click "View Details" to see buy options and wallet requirements
+                "Buy Now" for quick purchase or "View Details" for technical info
             </p>
 
             {/* Modal Integration - Render at document root */}
-            {isModalOpen && typeof document !== 'undefined' && createPortal(
+            {isModalOpen && id && typeof document !== 'undefined' && createPortal(
                 <BuyVoucherModal
                     voucherId={id}
                     voucherTitle={title}
                     voucherPrice={price}
-                    voucherImage={previewImageUrl}
+                    voucherImage={previewImageUrl} // Use preview image for modal
                     onClose={() => setIsModalOpen(false)}
+                    onPurchaseComplete={() => {
+                        setIsModalOpen(false);
+                        // Could add a callback here to refresh the listing data
+                    }}
                 />,
                 document.body
             )}

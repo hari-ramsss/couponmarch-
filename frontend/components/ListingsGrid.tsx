@@ -9,6 +9,7 @@ interface Listing {
     discount?: string;
     description: string;
     price: string;
+    value?: string; // Voucher face value
     verified: boolean;
     status?: string;
     category?: string;

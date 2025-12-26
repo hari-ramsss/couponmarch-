@@ -1207,35 +1207,39 @@ body.mobile-menu-open {
   position: relative;
   overflow: hidden;
   width: 100%;
-  height: 300px;
-  /* base height for mobile */
+  height: 450px;
+  /* increased base height for mobile */
 }
 
 /* Small Screens (≥640px) */
 @media (min-width: 640px) {
   .hero-comp {
-    height: 400px;
+    height: 500px;
+    /* increased from 400px */
   }
 }
 
 /* Medium Devices (≥768px) */
 @media (min-width: 768px) {
   .hero-comp {
-    height: 500px;
+    height: 600px;
+    /* increased from 500px */
   }
 }
 
 /* Large Devices (≥1024px) */
 @media (min-width: 1024px) {
   .hero-comp {
-    height: 550px;
+    height: 700px;
+    /* increased from 550px */
   }
 }
 
 /* Extra Large Devices (≥1280px) */
 @media (min-width: 1280px) {
   .hero-comp {
-    height: 600px;
+    height: 750px;
+    /* increased from 600px */
   }
 }
 
@@ -2633,13 +2637,18 @@ body.mobile-menu-open {
   background-color: white;
   border: 4px solid var(--pure-black);
   border-radius: 1rem;
-  padding: 1.5rem;
+  padding: 1.25rem;
+  /* Reduced from 1.5rem */
   box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
   transition: all 0.2s;
   position: relative;
   display: flex;
   flex-direction: column;
   height: fit-content;
+  min-height: 320px;
+  /* Reduced from default */
+  max-height: 380px;
+  /* Added max height for compactness */
 }
 
 .listing-card:hover {
@@ -2647,12 +2656,14 @@ body.mobile-menu-open {
   box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
 }
 
-/* Voucher Logo Container */
+/* Voucher Logo Container - More Compact */
 .voucher-logo-container {
   position: relative;
   width: 100%;
-  height: 120px;
-  margin-bottom: 1rem;
+  height: 80px;
+  /* Reduced from 120px */
+  margin-bottom: 0.75rem;
+  /* Reduced from 1rem */
   border-radius: 0.5rem;
   overflow: hidden;
   background-color: var(--off-white);
@@ -2722,49 +2733,113 @@ body.mobile-menu-open {
 /* Listing Title */
 .listing-title {
   color: var(--pure-black);
-  font-size: 1.25rem;
+  font-size: 1.125rem;
+  /* Slightly reduced */
   font-weight: 700;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem 0;
+  /* Reduced margin */
   line-height: 1.3;
   padding-right: 5rem;
   /* Space for verified badge */
 }
 
-/* Listing Type */
+/* Brand & Type Row */
+.listing-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.listing-brand {
+  color: var(--pure-black);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
 .listing-type {
   color: var(--muted-gray);
-  font-size: 0.875rem;
-  margin: 0 0 1rem 0;
+  font-size: 0.75rem;
+  margin: 0;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Value & Price Row */
+.listing-value-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+}
+
+.voucher-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.value-label {
+  color: var(--muted-gray);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.125rem;
   font-family: var(--font-inter), "Inter", sans-serif;
 }
 
-/* Listing Description */
+.value-amount {
+  color: var(--pure-black);
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
+.listing-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.price-label {
+  color: var(--muted-gray);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.125rem;
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
+.price-amount {
+  color: var(--punchy-red);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
+/* Listing Description - More Compact */
 .listing-description {
   color: var(--muted-gray);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  margin: 0 0 1.5rem 0;
+  font-size: 0.875rem;
+  /* Slightly reduced */
+  line-height: 1.4;
+  /* Tighter line height */
+  margin: 0 0 0.75rem 0;
+  /* Reduced margin */
   flex-grow: 1;
   font-family: var(--font-inter), "Inter", sans-serif;
-}
-
-/* Listing Price */
-.listing-price {
-  color: var(--pure-black);
-  font-size: 1rem;
-  margin: 0 0 1.5rem 0;
-  font-family: var(--font-inter), "Inter", sans-serif;
-}
-
-.listing-price strong {
-  color: var(--punchy-red);
-  font-size: 1.125rem;
-  font-weight: 700;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Listing Button */
 .listing-btn {
-  width: 100%;
   background-color: var(--punchy-red);
   color: white;
   font-weight: 700;
@@ -2776,7 +2851,7 @@ body.mobile-menu-open {
   cursor: pointer;
   transition: all 0.2s;
   font-family: var(--font-inter), "Inter", sans-serif;
-  margin-top: auto;
+  flex: 1;
 }
 
 .listing-btn:hover {
@@ -2787,6 +2862,28 @@ body.mobile-menu-open {
 .listing-btn:active {
   transform: translateY(0);
   box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Primary button (Buy Now) */
+.listing-btn.primary {
+  background-color: var(--punchy-red);
+}
+
+/* Secondary button (View Details) */
+.listing-btn.secondary {
+  background-color: var(--pure-black);
+  color: white;
+}
+
+.listing-btn.secondary:hover {
+  background-color: #333;
+}
+
+/* Button container for dual layout */
+.listing-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: auto;
 }
 
 /* Listing Note */
@@ -2905,25 +3002,55 @@ body.mobile-menu-open {
 /* Responsive adjustments for listing cards and buttons */
 @media (max-width: 639px) {
   .listing-card {
-    padding: 1.25rem;
+    padding: 1rem;
+    /* More compact on mobile */
+    min-height: 280px;
+    /* Smaller on mobile */
+    max-height: 340px;
+  }
+
+  .voucher-logo-container {
+    height: 60px;
+    /* Even smaller logo on mobile */
   }
 
   .listing-title {
-    font-size: 1.125rem;
+    font-size: 1rem;
+    /* Smaller title on mobile */
     padding-right: 4rem;
+  }
+
+  .listing-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .listing-value-price-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .listing-description {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 1;
+    /* Only 1 line on mobile */
   }
 
   /* Mobile responsive buy buttons */
   .verified-buy-btn,
   .secure-buy-btn,
   .listing-btn {
-    font-size: 0.9375rem;
-    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+    /* Smaller font */
+    padding: 0.75rem 1rem;
+    /* More compact padding */
   }
 
   .verified-buy-btn.premium {
-    font-size: 1rem;
-    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    padding: 0.875rem 1.25rem;
   }
 }
 
@@ -4794,32 +4921,41 @@ body.mobile-menu-open {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
-  margin: 0.5rem 0;
+  margin: 0.5rem 0 0.75rem 0;
+  /* Adjusted margin */
 }
 
 .tag {
-  background: #f0f0f0;
-  color: #333;
-  padding: 0.2rem 0.4rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  background: var(--off-white);
+  color: var(--pure-black);
+  padding: 0.15rem 0.35rem;
+  /* More compact */
+  border-radius: 8px;
+  /* Smaller radius */
+  font-size: 0.7rem;
+  /* Smaller font */
   font-weight: 500;
+  border: 1px solid var(--muted-gray);
+  font-family: var(--font-inter), "Inter", sans-serif;
 }
 
 .tag-more {
-  background: #e0e0e0;
-  color: #666;
-  padding: 0.2rem 0.4rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  background: var(--muted-gray);
+  color: white;
+  padding: 0.15rem 0.35rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
   font-weight: 500;
+  font-family: var(--font-inter), "Inter", sans-serif;
 }
 
-/* Enhanced Listing Card Layout */
+/* Enhanced Listing Card Layout - Updated for Compact Design */
 .listing-card {
   position: relative;
-  min-height: 400px;
-  /* Increased for more content */
+  min-height: 320px;
+  /* Reduced from 400px */
+  max-height: 380px;
+  /* Added max height constraint */
 }
 
 .listing-card .voucher-logo-container {

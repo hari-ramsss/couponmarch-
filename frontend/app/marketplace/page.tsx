@@ -50,10 +50,10 @@ export default function Marketplace() {
                         type: listing.metadata?.type || listing.partialPattern || "Voucher",
                         brand: listing.brand, // Brand from IPFS
                         discount: listing.metadata?.discountPercentage ?
-                            `${listing.metadata.discountPercentage}% off` :
-                            (listing.value > BigInt(0) ? `${listing.value.toString()} value` : undefined),
+                            `${listing.metadata.discountPercentage}% off` : undefined,
                         description: listing.description, // Rich description from IPFS
                         price: listing.formattedPrice, // Already formatted
+                        value: listing.value > BigInt(0) ? `₹${listing.value.toString()}` : undefined, // Voucher face value
                         verified: listing.isVerified,
                         status: listing.metadata?.validation?.validationStatus || 'pending',
                         seller: listing.seller,
