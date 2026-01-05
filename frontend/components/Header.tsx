@@ -160,6 +160,11 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                             </Link>
                         </li>
                         <li>
+                            <Link href="/revealed-vouchers" className="nav-link">
+                                My Vouchers
+                            </Link>
+                        </li>
+                        <li>
                             <Link href="/about" className="nav-link">
                                 About
                             </Link>
@@ -260,6 +265,9 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                         </Link>
                         <Link href="/sell" className="mobile-nav-link" onClick={handleNavClick}>
                             💰 Sell
+                        </Link>
+                        <Link href="/revealed-vouchers" className="mobile-nav-link" onClick={handleNavClick}>
+                            🎫 My Vouchers
                         </Link>
                         <Link href="/about" className="mobile-nav-link" onClick={handleNavClick}>
                             ℹ️ About

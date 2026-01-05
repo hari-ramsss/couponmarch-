@@ -29,6 +29,7 @@ export default function Footer() {
           <ul className="footer-links">
             <li><Link href="/marketplace">Marketplace</Link></li>
             <li><Link href="/sell">Create Listing</Link></li>
+            <li><Link href="/revealed-vouchers">My Vouchers</Link></li>
             <li><Link href="/how-it-works">How It Works</Link></li>
             <li><Link href="/support">Support</Link></li>
           </ul>
