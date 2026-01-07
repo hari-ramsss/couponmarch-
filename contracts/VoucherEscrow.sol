@@ -138,11 +138,13 @@ contract Escrow is ReentrancyGuard {
         marketplace.markAsLocked(id, msg.sender);
 
         emit Locked(id, msg.sender, price);
+
+        revealVoucher(id);
     }
 
-    // ------------------ SELLER REVEALS VOUCHER ------------------
+    // ------------------ CONTRACT REVEALS VOUCHER (CHANGED) ------------------
 
-    function revealVoucher(uint256 id) external onlySeller(id) {
+    function revealVoucher(uint256 id) private {
         (, , , , , , , uint8 status, , , ) = marketplace.getListing(id);
         require(status == 2, "Not LOCKED"); // Status.LOCKED = 2
 
