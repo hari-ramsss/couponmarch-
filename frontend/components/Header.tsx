@@ -12,9 +12,11 @@ interface HeaderProps {
 export default function Header({ pageType = 'home' }: HeaderProps) {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isWalletDropdownOpen, setIsWalletDropdownOpen] = useState(false);
     const [mneeBalance, setMneeBalance] = useState<string | null>(null);
     const { wallet, connect, disconnect, ensureSepolia, isLoading } = useWallet();
     const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const walletDropdownRef = useRef<HTMLDivElement>(null);
 
     // Fetch MNEE balance when wallet is connected
     useEffect(() => {
@@ -55,11 +57,17 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
     const handleDisconnectWallet = () => {
         disconnect();
         setIsMobileMenuOpen(false); // Close mobile menu when disconnecting
+        setIsWalletDropdownOpen(false); // Close wallet dropdown when disconnecting
     };
 
     // Handle mobile menu toggle
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    // Handle wallet dropdown toggle
+    const toggleWalletDropdown = () => {
+        setIsWalletDropdownOpen(!isWalletDropdownOpen);
     };
 
     // Close mobile menu when clicking outside
@@ -68,11 +76,16 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
             if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
                 setIsMobileMenuOpen(false);
             }
+            if (walletDropdownRef.current && !walletDropdownRef.current.contains(event.target as Node)) {
+                setIsWalletDropdownOpen(false);
+            }
         };
 
-        if (isMobileMenuOpen) {
+        if (isMobileMenuOpen || isWalletDropdownOpen) {
             document.addEventListener('mousedown', handleClickOutside);
-            document.body.style.overflow = 'hidden'; // Prevent background scroll
+            if (isMobileMenuOpen) {
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+            }
         } else {
             document.body.style.overflow = 'unset';
         }
@@ -81,29 +94,35 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
             document.removeEventListener('mousedown', handleClickOutside);
             document.body.style.overflow = 'unset';
         };
-    }, [isMobileMenuOpen]);
+    }, [isMobileMenuOpen, isWalletDropdownOpen]);
 
     // Close mobile menu on navigation
     const handleNavClick = () => {
         setIsMobileMenuOpen(false);
+        setIsWalletDropdownOpen(false);
     };
 
     // Handle keyboard navigation
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && isMobileMenuOpen) {
-                setIsMobileMenuOpen(false);
+            if (event.key === 'Escape') {
+                if (isMobileMenuOpen) {
+                    setIsMobileMenuOpen(false);
+                }
+                if (isWalletDropdownOpen) {
+                    setIsWalletDropdownOpen(false);
+                }
             }
         };
 
-        if (isMobileMenuOpen) {
+        if (isMobileMenuOpen || isWalletDropdownOpen) {
             document.addEventListener('keydown', handleKeyDown);
         }
 
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isMobileMenuOpen]);
+    }, [isMobileMenuOpen, isWalletDropdownOpen]);
 
     // Function to get user profile picture (placeholder for future implementation)
     const getUserProfilePicture = () => {
@@ -160,11 +179,6 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                             </Link>
                         </li>
                         <li>
-                            <Link href="/revealed-vouchers" className="nav-link">
-                                My Vouchers
-                            </Link>
-                        </li>
-                        <li>
                             <Link href="/about" className="nav-link">
                                 About
                             </Link>
@@ -200,23 +214,60 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                     <div className="nav-wallet-section">
                         {wallet.isConnected && wallet.address ? (
                             /* Connected Wallet */
-                            <div className="wallet-profile">
+                            <div className="wallet-profile" ref={walletDropdownRef}>
                                 <div className="wallet-info">
                                     <span className="wallet-address">{formatWalletAddress(wallet.address)}</span>
                                     {mneeBalance !== null && (
                                         <span className="wallet-balance">{mneeBalance} MNEE</span>
                                     )}
-                                    <button
-                                        className="disconnect-btn"
-                                        onClick={handleDisconnectWallet}
-                                    >
-                                        Disconnect
-                                    </button>
                                 </div>
                                 <div className="wallet-divider"></div>
-                                <div className="wallet-avatar">
-                                    <img src={getUserProfilePicture()} alt="User Avatar" />
+                                <div className="wallet-avatar-container">
+                                    <div className="wallet-avatar">
+                                        <img src={getUserProfilePicture()} alt="User Avatar" />
+                                    </div>
+                                    <button
+                                        className="wallet-dropdown-toggle"
+                                        onClick={toggleWalletDropdown}
+                                        aria-label="Toggle wallet menu"
+                                    >
+                                        <svg
+                                            className={`dropdown-arrow ${isWalletDropdownOpen ? 'dropdown-arrow-open' : ''}`}
+                                            width="12"
+                                            height="12"
+                                            viewBox="0 0 12 12"
+                                            fill="none"
+                                        >
+                                            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </button>
                                 </div>
+
+                                {/* Wallet Dropdown Menu */}
+                                {isWalletDropdownOpen && (
+                                    <div className="wallet-dropdown-menu">
+                                        <Link href="/revealed-vouchers" className="wallet-dropdown-item" onClick={handleNavClick}>
+                                            <span className="dropdown-icon">🎫</span>
+                                            My Vouchers
+                                        </Link>
+                                        <Link href="/my-listings" className="wallet-dropdown-item" onClick={handleNavClick}>
+                                            <span className="dropdown-icon">📋</span>
+                                            My Listings
+                                        </Link>
+                                        <Link href="/my-purchases" className="wallet-dropdown-item" onClick={handleNavClick}>
+                                            <span className="dropdown-icon">🛍️</span>
+                                            My Purchases
+                                        </Link>
+                                        <div className="wallet-dropdown-divider"></div>
+                                        <button
+                                            className="wallet-dropdown-item disconnect-item"
+                                            onClick={handleDisconnectWallet}
+                                        >
+                                            <span className="dropdown-icon">🔌</span>
+                                            Disconnect
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             /* No Wallet Connected */
@@ -228,7 +279,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                 >
                                     {isLoading ? 'Connecting...' : 'Connect Wallet'}
                                 </button>
-                                
+
                             </div>
                         )}
                     </div>
@@ -266,9 +317,6 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                         <Link href="/sell" className="mobile-nav-link" onClick={handleNavClick}>
                             💰 Sell
                         </Link>
-                        <Link href="/revealed-vouchers" className="mobile-nav-link" onClick={handleNavClick}>
-                            🎫 My Vouchers
-                        </Link>
                         <Link href="/about" className="mobile-nav-link" onClick={handleNavClick}>
                             ℹ️ About
                         </Link>
@@ -291,11 +339,28 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                         <span className="mobile-wallet-balance">{mneeBalance} MNEE</span>
                                     )}
                                 </div>
+
+                                {/* Mobile Wallet Menu Items */}
+                                <div className="mobile-wallet-menu">
+                                    <Link href="/revealed-vouchers" className="mobile-wallet-menu-item" onClick={handleNavClick}>
+                                        <span className="mobile-menu-icon">🎫</span>
+                                        My Vouchers
+                                    </Link>
+                                    <Link href="/my-listings" className="mobile-wallet-menu-item" onClick={handleNavClick}>
+                                        <span className="mobile-menu-icon">📋</span>
+                                        My Listings
+                                    </Link>
+                                    <Link href="/my-purchases" className="mobile-wallet-menu-item" onClick={handleNavClick}>
+                                        <span className="mobile-menu-icon">🛍️</span>
+                                        My Purchases
+                                    </Link>
+                                </div>
+
                                 <button
                                     className="mobile-disconnect-btn"
                                     onClick={handleDisconnectWallet}
                                 >
-                                    Disconnect
+                                    🔌 Disconnect
                                 </button>
                             </div>
                         ) : (
