@@ -3,7 +3,7 @@ const hre = require("hardhat");
 async function main(amount, to) {
   const token = await hre.ethers.getContractAt(
     "MockERC20",
-    "0x2d8E8f15a61f2820e6d493Cd144D28ffFb9E0D31"
+    "0x58cc5202F8aeC0B29003882a5921CC08db29bAC4"
   );
 
   const tx = await token.transfer(
