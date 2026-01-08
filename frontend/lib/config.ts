@@ -1,20 +1,24 @@
 // API Configuration
 export const API_CONFIG = {
-    // Backend API base URL
-    BASE_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+    // Backend API base URL (now integrated into Next.js)
+    BASE_URL: process.env.NEXT_PUBLIC_API_URL || '',
 
-    // API endpoints
+    // API endpoints (now Next.js API routes)
     ENDPOINTS: {
         UPLOAD_LOGO: '/api/upload/voucher-logo',
         UPLOAD_VOUCHER_IMAGE: '/api/upload/voucher-image',
         UPLOAD_METADATA: '/api/upload/voucher-metadata',
         IPFS_GET: '/api/ipfs',
-        HEALTH: '/health'
+        HEALTH: '/api/health'
     }
 };
 
 // Helper function to build full API URL
 export const buildApiUrl = (endpoint: string): string => {
+    // If BASE_URL is empty, use relative paths (same domain)
+    if (!API_CONFIG.BASE_URL) {
+        return endpoint;
+    }
     return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
 
