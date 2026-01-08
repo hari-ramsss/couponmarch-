@@ -71,7 +71,7 @@ export default function PriceSection({
       {/* Market Suggestion */}
       <div className="price-note">
         <p>
-          💡 Tip: Competitive pricing increases the chances of your voucher selling faster.
+          <span className="material-icons">lightbulb</span> Tip: Competitive pricing increases the chances of your voucher selling faster.
         </p>
       </div>
 
@@ -81,7 +81,7 @@ export default function PriceSection({
 
         {wallet.isConnected && wallet.address ? (
           <div>
-            <p className="wallet-address">{wallet.address} Wallet-Connected ✅</p>
+            <p className="wallet-address">{wallet.address} Wallet-Connected <span className="material-icons">check_circle</span></p>
             {mneeBalance !== "0" && (
               <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
                 Your MNEE Balance: {mneeBalance} MNEE

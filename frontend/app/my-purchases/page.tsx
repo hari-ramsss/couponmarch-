@@ -9,7 +9,7 @@ export default function MyPurchasesPage() {
     if (!wallet.isConnected) {
         return (
             <>
-                <Header pageType="marketplace" />
+                <Header pageType="vouchers" />
                 <div className="min-h-screen bg-[var(--off-white)] flex items-center justify-center">
                     <div className="text-center">
                         <h1 className="text-3xl font-bold mb-4">Connect Your Wallet</h1>
@@ -24,7 +24,7 @@ export default function MyPurchasesPage() {
 
     return (
         <>
-            <Header pageType="marketplace" />
+            <Header pageType="vouchers" />
             <div className="min-h-screen bg-[var(--off-white)] p-6">
                 <div className="max-w-7xl mx-auto">
                     <h1 className="text-4xl font-bold mb-8">My Purchases</h1>

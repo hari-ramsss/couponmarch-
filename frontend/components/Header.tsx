@@ -6,7 +6,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import { getMneeBalance, formatTokenAmount } from "@/lib/contracts-instance";
 
 interface HeaderProps {
-    pageType?: 'home' | 'marketplace' | 'sell';
+    pageType?: 'home' | 'marketplace' | 'sell' | 'vouchers' | 'other';
 }
 
 export default function Header({ pageType = 'home' }: HeaderProps) {
@@ -205,7 +205,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                 type="button"
                                 className="search-btn"
                             >
-                                🔍
+                                <span className="material-icons">search</span>
                             </button>
                         </form>
                     ) : null}
@@ -247,15 +247,15 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                 {isWalletDropdownOpen && (
                                     <div className="wallet-dropdown-menu">
                                         <Link href="/revealed-vouchers" className="wallet-dropdown-item" onClick={handleNavClick}>
-                                            <span className="dropdown-icon">🎫</span>
+                                            <span className="dropdown-icon material-icons">confirmation_number</span>
                                             My Vouchers
                                         </Link>
                                         <Link href="/my-listings" className="wallet-dropdown-item" onClick={handleNavClick}>
-                                            <span className="dropdown-icon">📋</span>
+                                            <span className="dropdown-icon material-icons">list_alt</span>
                                             My Listings
                                         </Link>
                                         <Link href="/my-purchases" className="wallet-dropdown-item" onClick={handleNavClick}>
-                                            <span className="dropdown-icon">🛍️</span>
+                                            <span className="dropdown-icon material-icons">shopping_bag</span>
                                             My Purchases
                                         </Link>
                                         <div className="wallet-dropdown-divider"></div>
@@ -263,7 +263,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                             className="wallet-dropdown-item disconnect-item"
                                             onClick={handleDisconnectWallet}
                                         >
-                                            <span className="dropdown-icon">🔌</span>
+                                            <span className="dropdown-icon material-icons">power_settings_new</span>
                                             Disconnect
                                         </button>
                                     </div>
@@ -308,20 +308,20 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                     <nav className="mobile-nav-links">
                         {pageType != 'home' && (
                             <Link href="/" className="mobile-nav-link" onClick={handleNavClick}>
-                                🏠 Home
+                                <span className="material-icons">home</span> Home
                             </Link>
                         )}
                         <Link href="/marketplace" className="mobile-nav-link" onClick={handleNavClick}>
-                            🛒 MarketPlace
+                            <span className="material-icons">store</span> MarketPlace
                         </Link>
                         <Link href="/sell" className="mobile-nav-link" onClick={handleNavClick}>
-                            💰 Sell
+                            <span className="material-icons">sell</span> Sell
                         </Link>
                         <Link href="/about" className="mobile-nav-link" onClick={handleNavClick}>
-                            ℹ️ About
+                            <span className="material-icons">info</span> About
                         </Link>
                         <Link href="/contact" className="mobile-nav-link" onClick={handleNavClick}>
-                            📧 Contact
+                            <span className="material-icons">email</span> Contact
                         </Link>
                     </nav>
 
@@ -343,15 +343,15 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                 {/* Mobile Wallet Menu Items */}
                                 <div className="mobile-wallet-menu">
                                     <Link href="/revealed-vouchers" className="mobile-wallet-menu-item" onClick={handleNavClick}>
-                                        <span className="mobile-menu-icon">🎫</span>
+                                        <span className="mobile-menu-icon material-icons">confirmation_number</span>
                                         My Vouchers
                                     </Link>
                                     <Link href="/my-listings" className="mobile-wallet-menu-item" onClick={handleNavClick}>
-                                        <span className="mobile-menu-icon">📋</span>
+                                        <span className="mobile-menu-icon material-icons">list_alt</span>
                                         My Listings
                                     </Link>
                                     <Link href="/my-purchases" className="mobile-wallet-menu-item" onClick={handleNavClick}>
-                                        <span className="mobile-menu-icon">🛍️</span>
+                                        <span className="mobile-menu-icon material-icons">shopping_bag</span>
                                         My Purchases
                                     </Link>
                                 </div>
@@ -360,7 +360,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                     className="mobile-disconnect-btn"
                                     onClick={handleDisconnectWallet}
                                 >
-                                    🔌 Disconnect
+                                    <span className="material-icons">power_settings_new</span> Disconnect
                                 </button>
                             </div>
                         ) : (
@@ -371,7 +371,11 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                     className="mobile-connect-btn"
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? 'Connecting...' : '🔗 Connect Wallet'}
+                                    {isLoading ? 'Connecting...' : (
+                                        <>
+                                            <span className="material-icons">link</span> Connect Wallet
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         )}

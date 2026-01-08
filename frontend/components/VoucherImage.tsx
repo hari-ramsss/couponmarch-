@@ -64,7 +64,7 @@ export default function VoucherImage({ src, alt, className = "", allowUnblur = t
                 {(isBlurred || forceBlurred) && !isLoading && (
                     <div className={`voucher-blur-overlay ${forceBlurred ? 'force-blurred' : ''}`}>
                         <div className="voucher-reveal-content">
-                            <span className="voucher-reveal-icon">🔒</span>
+                            <span className="voucher-reveal-icon material-icons">lock</span>
                             <p className="voucher-reveal-text">
                                 {forceBlurred ? 'Payment required to reveal' : 'Click to reveal voucher'}
                             </p>

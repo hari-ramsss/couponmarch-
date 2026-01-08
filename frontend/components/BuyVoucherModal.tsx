@@ -304,7 +304,7 @@ export default function BuyVoucherModal({
                                     forceBlurred={true}
                                 />
                                 <p className="voucher-preview-note">
-                                    🔒 Voucher image will be revealed after payment
+                                    <span className="material-icons">lock</span> Voucher image will be revealed after payment
                                 </p>
                             </div>
 
@@ -353,8 +353,8 @@ export default function BuyVoucherModal({
                         <>
                             <h3>Payment Locked Successfully!</h3>
 
-                            <p>✅ Your payment has been locked in escrow.</p>
-                            <p>🔄 Waiting for seller to reveal the voucher details...</p>
+                            <p><span className="material-icons">check_circle</span> Your payment has been locked in escrow.</p>
+                            <p><span className="material-icons">sync</span> Waiting for seller to reveal the voucher details...</p>
 
                             <div className="modal-voucher-preview">
                                 <VoucherImage
@@ -365,7 +365,7 @@ export default function BuyVoucherModal({
                                     forceBlurred={true}
                                 />
                                 <p className="voucher-preview-note">
-                                    🔒 Voucher will be revealed once seller provides the details
+                                    <span className="material-icons">lock</span> Voucher will be revealed once seller provides the details
                                 </p>
                             </div>
 
@@ -396,7 +396,7 @@ export default function BuyVoucherModal({
                                     forceBlurred={false}
                                 />
                                 <p className="voucher-reveal-note">
-                                    ✅ Voucher details have been revealed by the seller
+                                    <span className="material-icons">check_circle</span> Voucher details have been revealed by the seller
                                 </p>
                             </div>
 
@@ -421,11 +421,11 @@ export default function BuyVoucherModal({
 
                             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                                 <button onClick={handleConfirmVoucher} style={{ backgroundColor: '#4CAF50' }}>
-                                    ✅ Coupon Works
+                                    <span className="material-icons">check_circle</span> Coupon Works
                                 </button>
 
                                 <button onClick={handleDisputeVoucher} style={{ backgroundColor: '#f44336' }}>
-                                    ❌ Coupon Doesn't Work
+                                    <span className="material-icons">cancel</span> Coupon Doesn't Work
                                 </button>
                             </div>
                         </>
@@ -434,7 +434,7 @@ export default function BuyVoucherModal({
                     {state === "SUCCESS" && (
                         <>
                             <h3>Success</h3>
-                            <p>✅ Voucher confirmed! Funds have been released to the seller.</p>
+                            <p><span className="material-icons">check_circle</span> Voucher confirmed! Funds have been released to the seller.</p>
                             <p>Thank you for using our secure marketplace.</p>
                             <button onClick={onClose}>Close</button>
                         </>
@@ -443,7 +443,7 @@ export default function BuyVoucherModal({
                     {state === "FAILED" && (
                         <>
                             <h3>Dispute Initiated</h3>
-                            <p>🔄 Your dispute has been submitted. An admin will review the case.</p>
+                            <p><span className="material-icons">sync</span> Your dispute has been submitted. An admin will review the case.</p>
                             <p>Your payment will be refunded if the dispute is valid.</p>
                             <button onClick={onClose}>Close</button>
                         </>

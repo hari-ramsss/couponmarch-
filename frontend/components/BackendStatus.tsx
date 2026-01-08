@@ -25,7 +25,7 @@ export default function BackendStatus() {
     if (isChecking) {
         return (
             <div className="backend-status checking">
-                <span>🔄 Checking backend...</span>
+                <span><span className="material-icons">sync</span> Checking backend...</span>
             </div>
         );
     }
@@ -33,9 +33,9 @@ export default function BackendStatus() {
     return (
         <div className={`backend-status ${isBackendOnline ? 'online' : 'offline'}`}>
             {isBackendOnline ? (
-                <span>✅ IPFS Backend Online</span>
+                <span><span className="material-icons">check_circle</span> IPFS Backend Online</span>
             ) : (
-                <span>❌ IPFS Backend Offline</span>
+                <span><span className="material-icons">error</span> IPFS Backend Offline</span>
             )}
         </div>
     );

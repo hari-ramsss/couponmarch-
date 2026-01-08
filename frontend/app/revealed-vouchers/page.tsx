@@ -28,13 +28,13 @@ export default function RevealedVouchersPage() {
             try {
                 setLoading(true);
                 const allListings = await getAllListings(wallet.provider);
-                
+
                 // Filter vouchers that are revealed to the current user
-                const userRevealedListings = allListings.filter(listing => 
+                const userRevealedListings = allListings.filter(listing =>
                     listing.buyer.toLowerCase() === wallet.address?.toLowerCase() &&
-                    (listing.status === ListingStatus.REVEALED || 
-                     listing.status === ListingStatus.BUYER_CONFIRMED || 
-                     listing.status === ListingStatus.BUYER_DISPUTED)
+                    (listing.status === ListingStatus.REVEALED ||
+                        listing.status === ListingStatus.BUYER_CONFIRMED ||
+                        listing.status === ListingStatus.BUYER_DISPUTED)
                 );
 
                 // Enhance listings with metadata
@@ -71,19 +71,19 @@ export default function RevealedVouchersPage() {
 
         try {
             setActionLoading(prev => ({ ...prev, [listingId]: 'confirm' }));
-            
+
             const tx = await confirmVoucher(wallet.signer, listingId);
             await tx.wait();
-            
+
             // Update the voucher status locally
-            setRevealedVouchers(prev => 
-                prev.map(voucher => 
-                    voucher.id === listingId 
+            setRevealedVouchers(prev =>
+                prev.map(voucher =>
+                    voucher.id === listingId
                         ? { ...voucher, status: ListingStatus.BUYER_CONFIRMED }
                         : voucher
                 )
             );
-            
+
             alert('Voucher confirmed successfully!');
         } catch (error: any) {
             console.error('Error confirming voucher:', error);
@@ -106,19 +106,19 @@ export default function RevealedVouchersPage() {
 
         try {
             setActionLoading(prev => ({ ...prev, [listingId]: 'dispute' }));
-            
+
             const tx = await disputeVoucher(wallet.signer, listingId, evidenceCID);
             await tx.wait();
-            
+
             // Update the voucher status locally
-            setRevealedVouchers(prev => 
-                prev.map(voucher => 
-                    voucher.id === listingId 
+            setRevealedVouchers(prev =>
+                prev.map(voucher =>
+                    voucher.id === listingId
                         ? { ...voucher, status: ListingStatus.BUYER_DISPUTED }
                         : voucher
                 )
             );
-            
+
             alert('Dispute submitted successfully!');
         } catch (error: any) {
             console.error('Error disputing voucher:', error);
@@ -165,7 +165,7 @@ export default function RevealedVouchersPage() {
     if (!wallet.isConnected) {
         return (
             <>
-                <Header />
+                <Header pageType="vouchers" />
                 <main className="min-h-screen bg-gray-50 py-8">
                     <div className="container mx-auto px-4">
                         <div className="text-center py-16">
@@ -185,7 +185,7 @@ export default function RevealedVouchersPage() {
 
     return (
         <>
-            <Header />
+            <Header pageType="vouchers" />
             <main className="min-h-screen bg-gray-50 py-8">
                 <div className="container mx-auto px-4">
                     <div className="mb-8">
@@ -204,7 +204,9 @@ export default function RevealedVouchersPage() {
                         </div>
                     ) : revealedVouchers.length === 0 ? (
                         <div className="text-center py-16">
-                            <div className="text-6xl mb-4">🎫</div>
+                            <div className="text-6xl mb-4">
+                                <span className="material-icons" style={{ fontSize: '4rem', color: 'var(--punchy-red)' }}>confirmation_number</span>
+                            </div>
                             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                                 No Revealed Vouchers
                             </h2>
@@ -245,19 +247,18 @@ export default function RevealedVouchersPage() {
                                             <h3 className="text-lg font-semibold text-gray-900">
                                                 {voucher.metadata?.title || `Voucher #${voucher.id}`}
                                             </h3>
-                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                                voucher.status === ListingStatus.REVEALED ? 'bg-yellow-100 text-yellow-800' :
+                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${voucher.status === ListingStatus.REVEALED ? 'bg-yellow-100 text-yellow-800' :
                                                 voucher.status === ListingStatus.BUYER_CONFIRMED ? 'bg-green-100 text-green-800' :
-                                                'bg-red-100 text-red-800'
-                                            }`}>
+                                                    'bg-red-100 text-red-800'
+                                                }`}>
                                                 {getStatusLabel(voucher.status)}
                                             </span>
                                         </div>
-                                        
+
                                         <p className="text-gray-600 text-sm mb-2">
                                             {voucher.metadata?.brand || 'Unknown Brand'}
                                         </p>
-                                        
+
                                         <p className="text-gray-700 text-sm mb-3">
                                             {voucher.metadata?.description || voucher.partialPattern}
                                         </p>

@@ -39,7 +39,7 @@ export default function ContactPage() {
 
     return (
         <>
-            <Header pageType="marketplace" />
+            <Header pageType="other" />
             <div className="contact-page">
                 {/* Hero Section */}
                 <section className="contact-hero">
@@ -59,13 +59,14 @@ export default function ContactPage() {
 
                             {submitStatus === 'success' && (
                                 <div className="contact-alert contact-alert-success">
-                                    <p>✅ Message sent successfully! We'll get back to you soon.</p>
+                                    <p><span className="material-icons">check_circle</span> Message sent successfully! We'll get back to you soon.</p>
                                 </div>
                             )}
 
+
                             {submitStatus === 'error' && (
                                 <div className="contact-alert contact-alert-error">
-                                    <p>❌ Something went wrong. Please try again.</p>
+                                    <p><span className="material-icons">error</span> Something went wrong. Please try again.</p>
                                 </div>
                             )}
 
@@ -155,7 +156,9 @@ export default function ContactPage() {
                             {/* Contact Cards */}
                             <div className="contact-card contact-card-email">
                                 <div className="contact-card-header">
-                                    <div className="contact-card-icon">📧</div>
+                                    <div className="contact-card-icon">
+                                        <span className="material-icons">email</span>
+                                    </div>
                                     <div>
                                         <h3 className="contact-card-title">Email Support</h3>
                                         <p className="contact-card-desc">Get help with your account</p>
@@ -165,9 +168,12 @@ export default function ContactPage() {
                                 <p className="contact-card-note">Response time: 24-48 hours</p>
                             </div>
 
+
                             <div className="contact-card contact-card-community">
                                 <div className="contact-card-header">
-                                    <div className="contact-card-icon">💬</div>
+                                    <div className="contact-card-icon">
+                                        <span className="material-icons">forum</span>
+                                    </div>
                                     <div>
                                         <h3 className="contact-card-title">Community</h3>
                                         <p className="contact-card-desc">Join our Discord community</p>
@@ -177,9 +183,12 @@ export default function ContactPage() {
                                 <p className="contact-card-note">Real-time support & discussions</p>
                             </div>
 
+
                             <div className="contact-card contact-card-social">
                                 <div className="contact-card-header">
-                                    <div className="contact-card-icon">🐦</div>
+                                    <div className="contact-card-icon">
+                                        <span className="material-icons">alternate_email</span>
+                                    </div>
                                     <div>
                                         <h3 className="contact-card-title">Social Media</h3>
                                         <p className="contact-card-desc">Follow us for updates</p>
