@@ -12,7 +12,6 @@ type ModalState =
     | "INSUFFICIENT_BALANCE"
     | "APPROVING"
     | "PROCESSING"
-    | "REVEAL"
     | "REVEALED"
     | "VERIFY"
     | "SUCCESS"
@@ -162,8 +161,8 @@ export default function BuyVoucherModal({
 
             await tx.wait();
 
-            // Payment locked successfully, now seller needs to reveal
-            setState("REVEAL");
+            // Payment locked successfully, voucher is automatically revealed by contract
+            setState("REVEALED"); // Skip REVEAL waiting state
 
             if (onPurchaseComplete) {
                 onPurchaseComplete();
@@ -187,8 +186,8 @@ export default function BuyVoucherModal({
 
             await tx.wait();
 
-            // Payment locked successfully, now seller needs to reveal
-            setState("REVEAL");
+            // Payment locked successfully, voucher is automatically revealed by contract
+            setState("REVEALED"); // Skip REVEAL waiting state
 
             if (onPurchaseComplete) {
                 onPurchaseComplete();
@@ -349,43 +348,11 @@ export default function BuyVoucherModal({
                         </>
                     )}
 
-                    {state === "REVEAL" && listing && (
-                        <>
-                            <h3>Payment Locked Successfully!</h3>
-
-                            <p><span className="material-icons">check_circle</span> Your payment has been locked in escrow.</p>
-                            <p><span className="material-icons">sync</span> Waiting for seller to reveal the voucher details...</p>
-
-                            <div className="modal-voucher-preview">
-                                <VoucherImage
-                                    src={listing.metadata?.images?.voucher?.blurred || voucherImage || "/img/blank_coupon.png"}
-                                    alt={listing.metadata?.title || voucherTitle}
-                                    className="modal-voucher-image"
-                                    allowUnblur={false}
-                                    forceBlurred={true}
-                                />
-                                <p className="voucher-preview-note">
-                                    <span className="material-icons">lock</span> Voucher will be revealed once seller provides the details
-                                </p>
-                            </div>
-
-                            <p>
-                                The seller has been notified and will reveal the voucher details shortly.
-                                Once revealed, you'll be able to verify if the voucher works correctly.
-                            </p>
-
-                            <button onClick={() => {
-                                // For demo purposes, simulate seller revealing
-                                setState("REVEALED");
-                            }}>
-                                🔧 Simulate Seller Reveal (Demo)
-                            </button>
-                        </>
-                    )}
-
                     {state === "REVEALED" && listing && (
                         <>
-                            <h3>Voucher Revealed!</h3>
+                            <h3>Payment Successful!</h3>
+
+                            <p><span className="material-icons">check_circle</span> Your payment has been locked in escrow and the voucher has been revealed!</p>
 
                             <div className="modal-voucher-reveal">
                                 <VoucherImage
@@ -396,15 +363,14 @@ export default function BuyVoucherModal({
                                     forceBlurred={false}
                                 />
                                 <p className="voucher-reveal-note">
-                                    <span className="material-icons">check_circle</span> Voucher details have been revealed by the seller
+                                    <span className="material-icons">check_circle</span> Voucher details have been revealed
                                 </p>
                             </div>
 
                             <p><strong>Coupon Code:</strong> {listing.metadata?.code || "AMAZON-XYZ-123"}</p>
 
                             <p>
-                                The seller has revealed the voucher details above.
-                                Please test the coupon code to verify it works correctly.
+                                Please test the coupon code to verify it works correctly before confirming.
                             </p>
 
                             <button onClick={() => setState("VERIFY")}>
