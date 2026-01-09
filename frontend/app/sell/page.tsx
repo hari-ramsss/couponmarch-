@@ -34,6 +34,8 @@ export default function Sell() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationResult, setVerificationResult] = useState<any>(null);
 
 
     const handleLogoUpload = (file: File | null) => {
@@ -42,6 +44,56 @@ export default function Sell() {
 
     const handleVoucherImageUpload = (file: File | null) => {
         setVoucherImageFile(file);
+        setVerificationResult(null); // Reset verification when new image uploaded
+    };
+
+    // AI Verification function
+    const handleVerifyVoucher = async () => {
+        if (!voucherImageFile) {
+            setError('Please upload a voucher image first');
+            return;
+        }
+
+        if (!voucherCode) {
+            setError('Please enter the voucher code first');
+            return;
+        }
+
+        try {
+            setIsVerifying(true);
+            setError(null);
+            setSuccess('Verifying voucher with AI...');
+
+            const formData = new FormData();
+            formData.append('voucherImage', voucherImageFile);
+            formData.append('code', voucherCode);
+            formData.append('brand', brandName);
+            formData.append('type', voucherType);
+
+            const response = await fetch('/api/verify/voucher', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Verification failed');
+            }
+
+            setVerificationResult(result.data);
+
+            if (result.data.isValid) {
+                setSuccess(`✅ Verification passed! Score: ${result.data.score}%`);
+            } else {
+                setError(`❌ Verification failed: ${result.data.issues.join(', ')}`);
+            }
+        } catch (err: any) {
+            console.error('Verification error:', err);
+            setError(err.message || 'Failed to verify voucher');
+        } finally {
+            setIsVerifying(false);
+        }
     };
 
     // Helper function to validate and parse expiry date
@@ -99,42 +151,57 @@ export default function Sell() {
             let logoData = null;
             if (logoFile) {
                 setSuccess('Uploading logo to IPFS...');
+                console.log('📤 Uploading logo:', logoFile.name);
 
                 const logoFormData = new FormData();
                 logoFormData.append('logo', logoFile);
 
+                console.log('📡 Calling:', buildApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_LOGO));
                 const logoResponse = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_LOGO), {
                     method: 'POST',
                     body: logoFormData,
                 });
 
+                console.log('📥 Logo response status:', logoResponse.status);
                 const logoResult = await logoResponse.json();
+                console.log('📥 Logo result:', logoResult);
+
                 if (!logoResult.success) {
                     throw new Error(logoResult.error || 'Failed to upload logo');
                 }
 
                 logoData = logoResult.data;
+                console.log('✅ Logo uploaded! IPFS Hash:', logoData.original.ipfsHash);
             }
 
             // Step 2: Upload voucher image to IPFS (if provided)
             let voucherImageData = null;
             if (voucherImageFile) {
                 setSuccess('Uploading voucher image to IPFS...');
+                console.log('📤 Uploading voucher image:', voucherImageFile.name);
 
                 const imageFormData = new FormData();
                 imageFormData.append('voucherImage', voucherImageFile);
 
+                console.log('📡 Calling:', buildApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_VOUCHER_IMAGE));
                 const imageResponse = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.UPLOAD_VOUCHER_IMAGE), {
                     method: 'POST',
                     body: imageFormData,
                 });
 
+                console.log('📥 Voucher image response status:', imageResponse.status);
                 const imageResult = await imageResponse.json();
+                console.log('📥 Voucher image result:', imageResult);
+
                 if (!imageResult.success) {
                     throw new Error(imageResult.error || 'Failed to upload voucher image');
                 }
 
                 voucherImageData = imageResult.data;
+                console.log('✅ Voucher image uploaded! IPFS Hashes:', {
+                    original: voucherImageData.original.ipfsHash,
+                    blurred: voucherImageData.blurred.ipfsHash
+                });
             }
 
             // Step 3: Create and upload metadata to IPFS
@@ -142,33 +209,83 @@ export default function Sell() {
 
             // Prepare voucher metadata for IPFS upload
             const voucherMetadata = {
-                title: voucherTitle,
+                // Basic Information
+                title: voucherTitle || `${voucherType} - ${brandName || 'Voucher'}`,
                 type: voucherType,
-                brand: brandName,
+                brand: brandName || 'Unknown Brand',
                 description: `${voucherType} from ${brandName || 'Unknown Brand'}`,
+
+                // Voucher Details
                 code: voucherCode,
-                value: voucherValue,
-                discountPercentage: discountPercentage,
+                partialPattern: '', // Will be set by blockchain
+                value: parseFloat(voucherValue) || 0,
+                discountPercentage: parseFloat(discountPercentage) || 0,
+
+                // Pricing & Expiry
                 price: price,
                 currency: 'MNEE',
-                expiryDate: expiryDate,
+                expiryDate: expiryDate || null,
                 expiryTimestamp: expiryDate ? Math.floor(new Date(expiryDate).getTime() / 1000) : 0,
-                terms: terms,
-                sellerAddress: wallet.address,
-                network: 'sepolia',
 
-                // IPFS Image Data (now uploaded)
-                logoOriginal: logoData?.original?.ipfsHash || '',
-                logoThumbnail: logoData?.thumbnail?.ipfsHash || '',
-                voucherOriginal: voucherImageData?.original?.ipfsHash || '',
-                voucherBlurred: voucherImageData?.blurred?.ipfsHash || '',
-                voucherThumbnail: voucherImageData?.thumbnail?.ipfsHash || '',
+                // Terms & Conditions
+                terms: terms || '',
+                usageInstructions: '',
+                restrictions: '',
 
-                // Validation data
-                validationStatus: 'pending',
-                aiInitialProof: `proof_${voucherCode}_${Date.now()}`,
-                category: voucherType,
-                tags: [voucherType, brandName].filter(Boolean)
+                // Images (IPFS hashes) - FIXED: Nested structure
+                images: {
+                    logo: {
+                        original: logoData?.original?.ipfsHash || '',
+                        thumbnail: logoData?.thumbnail?.ipfsHash || '',
+                    },
+                    voucher: {
+                        original: voucherImageData?.original?.ipfsHash || '',
+                        blurred: voucherImageData?.blurred?.ipfsHash || '',
+                        thumbnail: voucherImageData?.thumbnail?.ipfsHash || '',
+                    },
+                },
+
+                // Seller Information
+                seller: {
+                    address: wallet.address || '',
+                    reputation: 0,
+                    totalSales: 0,
+                },
+
+                // Validation & Security
+                validation: {
+                    aiInitialProof: `proof_${voucherCode}_${Date.now()}`,
+                    validationScore: 0,
+                    validationStatus: 'pending',
+                    validatedAt: null,
+                },
+
+                // Blockchain Integration
+                blockchain: {
+                    network: 'sepolia',
+                    listingId: null,
+                    contractAddress: '',
+                    transactionHash: '',
+                },
+
+                // Platform Metadata
+                platform: {
+                    name: 'CouponMarche',
+                    version: '1.0.0',
+                    uploadedAt: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                    category: voucherType,
+                    tags: [voucherType, brandName].filter(Boolean),
+                    featured: false,
+                },
+
+                // Analytics & Tracking
+                analytics: {
+                    views: 0,
+                    favorites: 0,
+                    inquiries: 0,
+                    createdAt: new Date().toISOString(),
+                },
             };
 
             setSuccess('Uploading metadata to IPFS...');
@@ -216,7 +333,7 @@ export default function Sell() {
             const valueAmount = voucherValue ? BigInt(voucherValue.replace(/\D/g, '')) : BigInt(0);
 
             // AI initial proof hash (use the one from metadata)
-            const aiInitialProofHash = ethers.keccak256(ethers.toUtf8Bytes(voucherMetadata.aiInitialProof));
+            const aiInitialProofHash = ethers.keccak256(ethers.toUtf8Bytes(voucherMetadata.validation.aiInitialProof));
 
             // Create listing on blockchain
             const marketplaceContract = getMarketplaceContract(wallet.signer);
@@ -232,11 +349,61 @@ export default function Sell() {
             setSuccess('Transaction submitted. Waiting for confirmation...');
 
             const receipt = await tx.wait();
-            const listingId = receipt.logs[0]?.args?.[0] || 'unknown';
 
-            // Store IPFS hash mapping for future retrieval
-            if (listingId !== 'unknown') {
-                storeIPFSHashMapping(Number(listingId), ipfsHash);
+            // Extract listing ID from transaction receipt
+            // Try multiple methods to get the listing ID
+            let listingId: number | string = 'unknown';
+
+            // Method 1: Try to get from logs args
+            if (receipt.logs && receipt.logs.length > 0) {
+                const log = receipt.logs[0];
+                if (log.args && log.args[0] !== undefined) {
+                    listingId = Number(log.args[0]);
+                    console.log('📋 Listing ID from log args:', listingId);
+                }
+            }
+
+            // Method 2: Try to parse the event manually
+            if (listingId === 'unknown' && receipt.logs && receipt.logs.length > 0) {
+                try {
+                    const iface = marketplaceContract.interface;
+                    for (const log of receipt.logs) {
+                        try {
+                            const parsed = iface.parseLog({ topics: log.topics as string[], data: log.data });
+                            if (parsed && parsed.name === 'ListingCreated' && parsed.args[0] !== undefined) {
+                                listingId = Number(parsed.args[0]);
+                                console.log('📋 Listing ID from parsed event:', listingId);
+                                break;
+                            }
+                        } catch {
+                            // Continue to next log
+                        }
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing logs:', parseError);
+                }
+            }
+
+            console.log('📋 Final Listing ID:', listingId, 'IPFS Hash:', ipfsHash);
+
+            // Store IPFS hash mapping for future retrieval (localStorage)
+            if (listingId !== 'unknown' && typeof listingId === 'number') {
+                storeIPFSHashMapping(listingId, ipfsHash);
+
+                // Also store on backend for cross-user access
+                try {
+                    const storeResponse = await fetch('/api/ipfs/store', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ listingId, ipfsHash }),
+                    });
+                    const storeResult = await storeResponse.json();
+                    console.log('✅ IPFS mapping stored on backend:', storeResult);
+                } catch (err) {
+                    console.error('Failed to store IPFS mapping on backend:', err);
+                }
+            } else {
+                console.warn('⚠️ Could not extract listing ID from transaction receipt');
             }
 
             setSuccess(`Listing created successfully! Listing ID: ${listingId}. IPFS Hash: ${ipfsHash}`);
@@ -400,6 +567,98 @@ export default function Sell() {
                         onLogoUpload={handleLogoUpload}
                         onVoucherImageUpload={handleVoucherImageUpload}
                     />
+
+                    {/* AI Verification Section */}
+                    {voucherImageFile && voucherCode && (
+                        <div className="verification-section" style={{
+                            marginTop: '2rem',
+                            padding: '1.5rem',
+                            background: '#f8f9fa',
+                            borderRadius: '8px',
+                            border: '2px solid #e9ecef'
+                        }}>
+                            <h3 style={{ marginBottom: '1rem' }}>
+                                <span className="material-icons" style={{ verticalAlign: 'middle', marginRight: '0.5rem' }}>
+                                    verified
+                                </span>
+                                AI Verification
+                            </h3>
+                            <p style={{ marginBottom: '1rem', color: '#666' }}>
+                                Verify your voucher authenticity before listing
+                            </p>
+
+                            <button
+                                onClick={handleVerifyVoucher}
+                                disabled={isVerifying || isSubmitting}
+                                style={{
+                                    padding: '0.75rem 1.5rem',
+                                    background: isVerifying ? '#6c757d' : '#17a2b8',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: isVerifying ? 'not-allowed' : 'pointer',
+                                    fontSize: '1rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <span className="material-icons">
+                                    {isVerifying ? 'sync' : 'verified'}
+                                </span>
+                                {isVerifying ? 'Verifying...' : 'Verify Voucher with AI'}
+                            </button>
+
+                            {verificationResult && (
+                                <div style={{
+                                    marginTop: '1rem',
+                                    padding: '1rem',
+                                    background: verificationResult.isValid ? '#d4edda' : '#f8d7da',
+                                    color: verificationResult.isValid ? '#155724' : '#721c24',
+                                    borderRadius: '4px'
+                                }}>
+                                    <h4 style={{ marginBottom: '0.5rem' }}>
+                                        {verificationResult.isValid ? '✅ Verification Passed' : '❌ Verification Failed'}
+                                    </h4>
+                                    <p><strong>Score:</strong> {verificationResult.score}%</p>
+                                    <p><strong>Confidence:</strong> {verificationResult.confidence}%</p>
+
+                                    <div style={{ marginTop: '0.5rem' }}>
+                                        <strong>Findings:</strong>
+                                        <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+                                            <li>Voucher Code: {verificationResult.findings.hasVoucherCode ? '✅' : '❌'}</li>
+                                            <li>Brand Name: {verificationResult.findings.hasBrandName ? '✅' : '❌'}</li>
+                                            <li>Readable: {verificationResult.findings.isReadable ? '✅' : '❌'}</li>
+                                            <li>Authentic: {verificationResult.findings.looksAuthentic ? '✅' : '❌'}</li>
+                                        </ul>
+                                    </div>
+
+                                    {verificationResult.extractedData && (
+                                        <div style={{ marginTop: '0.5rem' }}>
+                                            <strong>Extracted Data:</strong>
+                                            {verificationResult.extractedData.voucherCode && (
+                                                <p>Code: {verificationResult.extractedData.voucherCode}</p>
+                                            )}
+                                            {verificationResult.extractedData.brandName && (
+                                                <p>Brand: {verificationResult.extractedData.brandName}</p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {verificationResult.issues.length > 0 && (
+                                        <div style={{ marginTop: '0.5rem' }}>
+                                            <strong>Issues:</strong>
+                                            <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+                                                {verificationResult.issues.map((issue: string, i: number) => (
+                                                    <li key={i}>{issue}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Bottom Section: Price */}

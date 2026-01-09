@@ -40,11 +40,18 @@ export default function ListingCard({
 }: ListingCardProps) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const router = useRouter();
 
     const handleBuyClick = () => {
         setIsModalOpen(true);
     };
+
+    // Debug log for image URLs
+    console.log(`🎴 ListingCard ${id}:`, { logoUrl, previewImageUrl, title });
+
+    // Determine the actual image source with fallback
+    const displayLogoUrl = (!imageError && logoUrl) ? logoUrl : "/img/blank_coupon.png";
 
     return (
         <div className="listing-card">
@@ -52,9 +59,16 @@ export default function ListingCard({
             {/* Voucher Logo */}
             <div className="voucher-logo-container">
                 <img
-                    src={logoUrl || "/img/blank_coupon.png"}
+                    src={displayLogoUrl}
                     alt={`${title} logo`}
                     className="voucher-logo"
+                    onError={() => {
+                        console.log(`❌ Image load error for listing ${id}:`, logoUrl);
+                        setImageError(true);
+                    }}
+                    onLoad={() => {
+                        console.log(`✅ Image loaded for listing ${id}:`, logoUrl);
+                    }}
                 />
             </div>
 

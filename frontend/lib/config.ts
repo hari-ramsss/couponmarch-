@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
     // Backend API base URL (now integrated into Next.js)
-    BASE_URL: process.env.NEXT_PUBLIC_API_URL || '',
+    BASE_URL: '', // process.env.NEXT_PUBLIC_API_URL || '', suka lol
 
     // API endpoints (now Next.js API routes)
     ENDPOINTS: {
@@ -25,12 +25,14 @@ export const buildApiUrl = (endpoint: string): string => {
 // Helper function to check if backend is available
 export const checkBackendHealth = async (): Promise<boolean> => {
     try {
-        const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.HEALTH), {
+
+        let response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.HEALTH), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
         });
+
         return response.ok;
     } catch (error) {
         console.error('Backend health check failed:', error);

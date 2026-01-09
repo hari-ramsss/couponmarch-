@@ -1,5 +1,4 @@
-import { ethers } from 'ethers';
-import { API_CONFIG, buildApiUrl } from './config';
+// Removed unused imports - ethers and config imports not needed
 
 /**
  * Voucher metadata structure from IPFS
@@ -88,7 +87,7 @@ export interface VoucherMetadata {
  * Convert bytes32 hash back to original IPFS hash
  * This reverses the process done in the smart contract
  */
-export function bytes32ToIpfsHash(bytes32Hash: string, originalIpfsHash?: string): string | null {
+export function bytes32ToIpfsHash(originalIpfsHash?: string): string | null {
     // In our implementation, we used keccak256(ipfsHash) to create bytes32
     // We can't reverse keccak256, so we need to store the mapping or use events
 
@@ -106,34 +105,35 @@ export function bytes32ToIpfsHash(bytes32Hash: string, originalIpfsHash?: string
 export async function fetchMetadataFromIPFS(ipfsHash: string): Promise<VoucherMetadata | null> {
     try {
         if (!ipfsHash || ipfsHash === '0x0000000000000000000000000000000000000000000000000000000000000000') {
+            console.log('⚠️ No IPFS hash provided for metadata fetch');
             return null;
         }
 
-        // Use backend IPFS endpoint to fetch metadata
-        const response = await fetch(buildApiUrl(`${API_CONFIG.ENDPOINTS.IPFS_GET}/${ipfsHash}`));
+        console.log(`📥 Fetching metadata from IPFS: ${ipfsHash}`);
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch metadata: ${response.status}`);
-        }
+        // Direct fetch from Pinata gateway (skip backend route for now)
+        const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+        console.log(`📡 Gateway URL: ${gatewayUrl}`);
 
-        const result = await response.json();
-
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to fetch metadata from IPFS');
-        }
-
-        // Fetch the actual JSON content from the gateway URL
-        const metadataResponse = await fetch(result.data.gatewayUrl);
+        const metadataResponse = await fetch(gatewayUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+        });
 
         if (!metadataResponse.ok) {
-            throw new Error(`Failed to fetch metadata content: ${metadataResponse.status}`);
+            console.warn(`⚠️ Failed to fetch metadata: ${metadataResponse.status} for hash ${ipfsHash}`);
+            return null;
         }
 
         const metadata: VoucherMetadata = await metadataResponse.json();
+        console.log(`✅ Metadata fetched successfully:`, metadata.title);
         return metadata;
 
     } catch (error) {
-        console.error('Error fetching metadata from IPFS:', error);
+        console.warn('Error fetching metadata from IPFS:', error);
+        // Return null instead of throwing to allow graceful degradation
         return null;
     }
 }
@@ -188,10 +188,22 @@ export async function enhanceListingWithMetadata(
     ipfsHash?: string
 ): Promise<EnhancedListingData> {
 
+    console.log(`🔄 Enhancing listing ${listing.id} with IPFS hash: ${ipfsHash || 'none'}`);
+
     // Fetch metadata from IPFS if hash is available
     let metadata: VoucherMetadata | null = null;
     if (ipfsHash) {
         metadata = await fetchMetadataFromIPFS(ipfsHash);
+        if (metadata) {
+            console.log(`📦 Metadata for listing ${listing.id}:`, {
+                title: metadata.title,
+                brand: metadata.brand,
+                logoOriginal: metadata.images?.logo?.original,
+                logoThumbnail: metadata.images?.logo?.thumbnail,
+                voucherOriginal: metadata.images?.voucher?.original,
+                voucherBlurred: metadata.images?.voucher?.blurred,
+            });
+        }
     }
 
     // Format price
@@ -199,11 +211,23 @@ export async function enhanceListingWithMetadata(
     const formattedPrice = await formatTokenAmount(provider, listing.price);
 
     // Check if expired
-    const isExpired = listing.expiryTimestamp > 0n &&
+    const isExpired = listing.expiryTimestamp > BigInt(0) &&
         BigInt(Math.floor(Date.now() / 1000)) >= listing.expiryTimestamp;
 
     // Check if verified
     const isVerified = listing.aiInitialProof !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+    // Get logo URL with fallback chain: thumbnail -> original -> empty
+    const logoHash = metadata?.images?.logo?.thumbnail || metadata?.images?.logo?.original || '';
+    const logoUrl = logoHash ? getIPFSImageUrl(logoHash) : '';
+
+    // Get preview image URL with fallback chain: blurred -> thumbnail -> original -> empty
+    const previewHash = metadata?.images?.voucher?.blurred ||
+        metadata?.images?.voucher?.thumbnail ||
+        metadata?.images?.voucher?.original || '';
+    const previewImageUrl = previewHash ? getIPFSImageUrl(previewHash) : '';
+
+    console.log(`🖼️ Listing ${listing.id} URLs:`, { logoUrl, previewImageUrl });
 
     return {
         // Original blockchain data
@@ -217,10 +241,8 @@ export async function enhanceListingWithMetadata(
         description: metadata?.description || `Partial code: ${listing.partialPattern || 'N/A'}`,
         brand: metadata?.brand || 'Unknown Brand',
         category: metadata?.platform?.category || 'General',
-        logoUrl: metadata?.images?.logo?.thumbnail ?
-            getIPFSImageUrl(metadata.images.logo.thumbnail) : '',
-        previewImageUrl: metadata?.images?.voucher?.blurred ?
-            getIPFSImageUrl(metadata.images.voucher.blurred) : '',
+        logoUrl,
+        previewImageUrl,
         tags: metadata?.platform?.tags || [],
         formattedPrice: `${formattedPrice} MNEE`,
         isExpired,

@@ -246,7 +246,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                 {/* Wallet Dropdown Menu */}
                                 {isWalletDropdownOpen && (
                                     <div className="wallet-dropdown-menu">
-                                        <Link href="/revealed-vouchers" className="wallet-dropdown-item" onClick={handleNavClick}>
+                                        <Link href="/My-purchases" className="wallet-dropdown-item" onClick={handleNavClick}>
                                             <span className="dropdown-icon material-icons">confirmation_number</span>
                                             My Vouchers
                                         </Link>
@@ -254,10 +254,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                             <span className="dropdown-icon material-icons">list_alt</span>
                                             My Listings
                                         </Link>
-                                        <Link href="/my-purchases" className="wallet-dropdown-item" onClick={handleNavClick}>
-                                            <span className="dropdown-icon material-icons">shopping_bag</span>
-                                            My Purchases
-                                        </Link>
+
                                         <div className="wallet-dropdown-divider"></div>
                                         <button
                                             className="wallet-dropdown-item disconnect-item"
@@ -342,7 +339,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
 
                                 {/* Mobile Wallet Menu Items */}
                                 <div className="mobile-wallet-menu">
-                                    <Link href="/revealed-vouchers" className="mobile-wallet-menu-item" onClick={handleNavClick}>
+                                    <Link href="/My-purchases" className="mobile-wallet-menu-item" onClick={handleNavClick}>
                                         <span className="mobile-menu-icon material-icons">confirmation_number</span>
                                         My Vouchers
                                     </Link>
@@ -350,10 +347,7 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                         <span className="mobile-menu-icon material-icons">list_alt</span>
                                         My Listings
                                     </Link>
-                                    <Link href="/my-purchases" className="mobile-wallet-menu-item" onClick={handleNavClick}>
-                                        <span className="mobile-menu-icon material-icons">shopping_bag</span>
-                                        My Purchases
-                                    </Link>
+
                                 </div>
 
                                 <button

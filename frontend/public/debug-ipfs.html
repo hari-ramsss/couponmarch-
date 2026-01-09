@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Debug IPFS Mappings</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.success {
+            background: #28a745;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8f9fa;
+        }
+
+        input {
+            padding: 8px;
+            width: 100%;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Debug IPFS Mappings</h1>
+
+    <div class="section">
+        <h2>Current Mappings (localStorage + Backend)</h2>
+        <button onclick="showMappings()">Show localStorage</button>
+        <button onclick="showBackendMappings()" class="secondary">Show Backend</button>
+        <button onclick="syncFromBackend()" class="success">Sync from Backend</button>
+        <button onclick="clearMappings()">Clear localStorage</button>
+        <div id="mappings-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Add Manual Mapping</h2>
+        <label>Listing ID:</label>
+        <input type="number" id="listing-id" placeholder="e.g., 1">
+        <label>IPFS Hash:</label>
+        <input type="text" id="ipfs-hash" placeholder="e.g., QmXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX">
+        <button onclick="addMapping()">Add to localStorage</button>
+        <button onclick="addMappingToBackend()" class="success">Add to Backend</button>
+        <div id="add-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test IPFS Hash</h2>
+        <label>IPFS Hash to Test:</label>
+        <input type="text" id="test-hash" placeholder="Paste IPFS hash here">
+        <button onclick="testHash()">Test Hash</button>
+        <div id="test-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Bulk Add from Pinata</h2>
+        <p>If you have multiple listings, add them here:</p>
+        <label>Listing 1 IPFS Hash:</label>
+        <input type="text" id="hash-1" placeholder="QmXXX...">
+        <label>Listing 2 IPFS Hash:</label>
+        <input type="text" id="hash-2" placeholder="QmXXX...">
+        <label>Listing 3 IPFS Hash:</label>
+        <input type="text" id="hash-3" placeholder="QmXXX...">
+        <label>Listing 4 IPFS Hash:</label>
+        <input type="text" id="hash-4" placeholder="QmXXX...">
+        <label>Listing 5 IPFS Hash:</label>
+        <input type="text" id="hash-5" placeholder="QmXXX...">
+        <button onclick="bulkAdd()">Add All to localStorage</button>
+        <button onclick="bulkAddToBackend()" class="success">Add All to Backend</button>
+        <div id="bulk-result"></div>
+    </div>
+
+    <script>
+        function showMappings() {
+            const resultDiv = document.getElementById('mappings-result');
+            const mappings = localStorage.getItem('ipfs_hash_mappings');
+
+            if (!mappings) {
+                resultDiv.innerHTML = '<p class="error">❌ No mappings found in localStorage</p>';
+                return;
+            }
+
+            try {
+                const parsed = JSON.parse(mappings);
+                const count = Object.keys(parsed).length;
+
+                let html = `<p class="success">✅ Found ${count} mapping(s) in localStorage</p>`;
+                html += '<table><tr><th>Listing ID</th><th>IPFS Hash</th><th>Gateway URL</th></tr>';
+
+                for (const [id, hash] of Object.entries(parsed)) {
+                    const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${hash}`;
+                    html += `<tr>
+                        <td>${id}</td>
+                        <td><code>${hash}</code></td>
+                        <td><a href="${gatewayUrl}" target="_blank">View</a></td>
+                    </tr>`;
+                }
+
+                html += '</table>';
+                html += '<h4>Raw Data:</h4>';
+                html += `<pre>${JSON.stringify(parsed, null, 2)}</pre>`;
+
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error parsing mappings: ${error.message}</p>`;
+            }
+        }
+
+        async function showBackendMappings() {
+            const resultDiv = document.getElementById('mappings-result');
+            resultDiv.innerHTML = '<p>Loading from backend...</p>';
+
+            try {
+                const response = await fetch('/api/ipfs/store');
+                const result = await response.json();
+
+                if (!result.success) {
+                    resultDiv.innerHTML = `<p class="error">❌ Backend error: ${result.error}</p>`;
+                    return;
+                }
+
+                const mappings = result.data;
+                const count = Object.keys(mappings).length;
+
+                let html = `<p class="success">✅ Found ${count} mapping(s) on Backend</p>`;
+                html += '<table><tr><th>Listing ID</th><th>IPFS Hash</th><th>Gateway URL</th></tr>';
+
+                for (const [id, hash] of Object.entries(mappings)) {
+                    const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${hash}`;
+                    html += `<tr>
+                        <td>${id}</td>
+                        <td><code>${hash}</code></td>
+                        <td><a href="${gatewayUrl}" target="_blank">View</a></td>
+                    </tr>`;
+                }
+
+                html += '</table>';
+                html += '<h4>Raw Data:</h4>';
+                html += `<pre>${JSON.stringify(mappings, null, 2)}</pre>`;
+
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error fetching from backend: ${error.message}</p>`;
+            }
+        }
+
+        async function syncFromBackend() {
+            const resultDiv = document.getElementById('mappings-result');
+            resultDiv.innerHTML = '<p>Syncing from backend...</p>';
+
+            try {
+                const response = await fetch('/api/ipfs/store');
+                const result = await response.json();
+
+                if (!result.success) {
+                    resultDiv.innerHTML = `<p class="error">❌ Backend error: ${result.error}</p>`;
+                    return;
+                }
+
+                // Merge with existing localStorage
+                const existing = JSON.parse(localStorage.getItem('ipfs_hash_mappings') || '{}');
+                const merged = { ...existing, ...result.data };
+                localStorage.setItem('ipfs_hash_mappings', JSON.stringify(merged));
+
+                resultDiv.innerHTML = `<p class="success">✅ Synced ${Object.keys(result.data).length} mapping(s) from backend!</p>`;
+                showMappings();
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error syncing: ${error.message}</p>`;
+            }
+        }
+
+        function clearMappings() {
+            if (confirm('Are you sure you want to clear all localStorage IPFS mappings?')) {
+                localStorage.removeItem('ipfs_hash_mappings');
+                document.getElementById('mappings-result').innerHTML = '<p class="success">✅ localStorage mappings cleared</p>';
+            }
+        }
+
+        function addMapping() {
+            const resultDiv = document.getElementById('add-result');
+            const listingId = document.getElementById('listing-id').value;
+            const ipfsHash = document.getElementById('ipfs-hash').value;
+
+            if (!listingId || !ipfsHash) {
+                resultDiv.innerHTML = '<p class="error">❌ Please fill in both fields</p>';
+                return;
+            }
+
+            try {
+                const mappings = JSON.parse(localStorage.getItem('ipfs_hash_mappings') || '{}');
+                mappings[listingId] = ipfsHash;
+                localStorage.setItem('ipfs_hash_mappings', JSON.stringify(mappings));
+
+                resultDiv.innerHTML = `<p class="success">✅ Added to localStorage: Listing ${listingId} → ${ipfsHash}</p>`;
+                showMappings();
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function addMappingToBackend() {
+            const resultDiv = document.getElementById('add-result');
+            const listingId = document.getElementById('listing-id').value;
+            const ipfsHash = document.getElementById('ipfs-hash').value;
+
+            if (!listingId || !ipfsHash) {
+                resultDiv.innerHTML = '<p class="error">❌ Please fill in both fields</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/ipfs/store', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ listingId: parseInt(listingId), ipfsHash }),
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    // Also add to localStorage
+                    const mappings = JSON.parse(localStorage.getItem('ipfs_hash_mappings') || '{}');
+                    mappings[listingId] = ipfsHash;
+                    localStorage.setItem('ipfs_hash_mappings', JSON.stringify(mappings));
+
+                    resultDiv.innerHTML = `<p class="success">✅ Added to Backend + localStorage: Listing ${listingId} → ${ipfsHash}</p>`;
+                    showMappings();
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Backend error: ${result.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testHash() {
+            const resultDiv = document.getElementById('test-result');
+            const hash = document.getElementById('test-hash').value;
+
+            if (!hash) {
+                resultDiv.innerHTML = '<p class="error">❌ Please enter an IPFS hash</p>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<p>Testing...</p>';
+
+            try {
+                const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${hash}`;
+                const response = await fetch(gatewayUrl);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Hash is valid and accessible!</p>
+                        <p><strong>Gateway URL:</strong> <a href="${gatewayUrl}" target="_blank">${gatewayUrl}</a></p>
+                        <h4>Metadata:</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Failed to fetch: ${response.status} ${response.statusText}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        function bulkAdd() {
+            const resultDiv = document.getElementById('bulk-result');
+            const mappings = JSON.parse(localStorage.getItem('ipfs_hash_mappings') || '{}');
+            let added = 0;
+
+            for (let i = 1; i <= 5; i++) {
+                const hash = document.getElementById(`hash-${i}`).value;
+                if (hash) {
+                    mappings[i] = hash;
+                    added++;
+                }
+            }
+
+            if (added === 0) {
+                resultDiv.innerHTML = '<p class="error">❌ No hashes provided</p>';
+                return;
+            }
+
+            localStorage.setItem('ipfs_hash_mappings', JSON.stringify(mappings));
+            resultDiv.innerHTML = `<p class="success">✅ Added ${added} mapping(s) to localStorage!</p>`;
+            showMappings();
+        }
+
+        async function bulkAddToBackend() {
+            const resultDiv = document.getElementById('bulk-result');
+            let added = 0;
+            let errors = [];
+
+            for (let i = 1; i <= 5; i++) {
+                const hash = document.getElementById(`hash-${i}`).value;
+                if (hash) {
+                    try {
+                        const response = await fetch('/api/ipfs/store', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ listingId: i, ipfsHash: hash }),
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            added++;
+                        } else {
+                            errors.push(`Listing ${i}: ${result.error}`);
+                        }
+                    } catch (error) {
+                        errors.push(`Listing ${i}: ${error.message}`);
+                    }
+                }
+            }
+
+            if (added === 0 && errors.length === 0) {
+                resultDiv.innerHTML = '<p class="error">❌ No hashes provided</p>';
+                return;
+            }
+
+            let html = `<p class="success">✅ Added ${added} mapping(s) to Backend!</p>`;
+            if (errors.length > 0) {
+                html += `<p class="error">Errors: ${errors.join(', ')}</p>`;
+            }
+            resultDiv.innerHTML = html;
+
+            // Sync to localStorage
+            await syncFromBackend();
+        }
+
+        // Auto-show mappings on load
+        window.onload = showMappings;
+    </script>
+</body>
+
+</html>

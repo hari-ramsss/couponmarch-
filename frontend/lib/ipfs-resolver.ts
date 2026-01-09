@@ -86,9 +86,11 @@ async function extractIPFSHashFromTransaction(txData: string): Promise<string | 
  */
 export function storeIPFSHashMapping(listingId: number, ipfsHash: string): void {
     try {
+        console.log(`💾 Storing IPFS hash mapping: Listing ${listingId} → ${ipfsHash}`);
         const mappings = getStoredIPFSMappings();
         mappings[listingId] = ipfsHash;
         localStorage.setItem('ipfs_hash_mappings', JSON.stringify(mappings));
+        console.log(`✅ Stored! Current mappings:`, mappings);
 
         // Also update cache
         ipfsHashCache.set(listingId, ipfsHash);
@@ -131,39 +133,47 @@ export async function resolveIPFSHash(
     provider: BrowserProvider,
     listingId: number
 ): Promise<string | null> {
+    console.log(`🔍 Resolving IPFS hash for listing ${listingId}...`);
+
     // Method 1: Check cache
     if (ipfsHashCache.has(listingId)) {
-        return ipfsHashCache.get(listingId) || null;
+        const cached = ipfsHashCache.get(listingId) || null;
+        console.log(`✅ Found in cache:`, cached);
+        return cached;
     }
 
-    // Method 2: Check localStorage
-    const storedHash = getStoredIPFSHash(listingId);
-    if (storedHash) {
-        ipfsHashCache.set(listingId, storedHash);
-        return storedHash;
-    }
-
-    // Method 3: Try to get from blockchain events
-    const eventHash = await getIPFSHashForListing(provider, listingId);
-    if (eventHash) {
-        return eventHash;
-    }
-
-    // Method 4: Use a backend API to resolve (if implemented)
+    // Method 2: Try backend API first (more reliable for cross-browser)
     try {
         const response = await fetch(`/api/ipfs/resolve/${listingId}`);
         if (response.ok) {
             const result = await response.json();
             if (result.success && result.ipfsHash) {
+                console.log(`✅ Found from backend API:`, result.ipfsHash);
                 ipfsHashCache.set(listingId, result.ipfsHash);
                 return result.ipfsHash;
             }
         }
     } catch (error) {
-        // Backend API not available, continue
+        console.log(`⚠️ Backend API not available for listing ${listingId}`);
     }
 
-    console.warn(`Could not resolve IPFS hash for listing ${listingId}`);
+    // Method 3: Check localStorage (fallback for same-browser)
+    const storedHash = getStoredIPFSHash(listingId);
+    if (storedHash) {
+        console.log(`✅ Found in localStorage:`, storedHash);
+        ipfsHashCache.set(listingId, storedHash);
+        return storedHash;
+    }
+
+    // Method 4: Try to get from blockchain events
+    const eventHash = await getIPFSHashForListing(provider, listingId);
+    if (eventHash) {
+        console.log(`✅ Found from blockchain events:`, eventHash);
+        return eventHash;
+    }
+
+    // No IPFS hash found - this is normal for listings without metadata
+    console.log(`⚠️ No IPFS hash found for listing ${listingId}`);
     return null;
 }
 

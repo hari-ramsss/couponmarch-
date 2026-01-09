@@ -90,19 +90,19 @@ export async function formatTokenAmount(
   const divisor = BigInt(10 ** Number(decimals));
   const wholePart = amount / divisor;
   const fractionalPart = amount % divisor;
-  
-  if (fractionalPart === 0n) {
+
+  if (fractionalPart === BigInt(0)) {
     return wholePart.toString();
   }
-  
+
   const fractionalStr = fractionalPart.toString().padStart(Number(decimals), '0');
   const trimmedFractional = fractionalStr.replace(/0+$/, '');
-  
+
   return trimmedFractional ? `${wholePart}.${trimmedFractional}` : wholePart.toString();
 }
 
 /**
- * Parse token amount from string (e.g., "1.5" -> 1500000000000000000n for 18 decimals)
+ * Parse token amount from string (e.g., "1.5" -> BigInt("1500000000000000000") for 18 decimals)
  */
 export async function parseTokenAmount(
   provider: BrowserProvider,
@@ -111,11 +111,11 @@ export async function parseTokenAmount(
   const contract = getMockERC20Contract(provider);
   const decimals = await contract.decimals();
   const [whole, fractional = ''] = amount.split('.');
-  
+
   const wholePart = BigInt(whole || '0');
   const fractionalPart = BigInt((fractional.padEnd(Number(decimals), '0')).slice(0, Number(decimals)));
   const divisor = BigInt(10 ** Number(decimals));
-  
+
   return wholePart * divisor + fractionalPart;
 }
 
