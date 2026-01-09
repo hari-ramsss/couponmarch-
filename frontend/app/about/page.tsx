@@ -69,7 +69,7 @@ export default function AboutPage() {
                             <div className="about-features-grid">
                                 <div className="about-feature-item">
                                     <div className="about-feature-icon">
-                                        <span className="material-icons">link</span>
+                                        <span className="material-icons">security</span>
                                     </div>
                                     <h3 className="about-feature-title">Blockchain Security</h3>
                                     <p className="about-feature-desc">All transactions secured by smart contracts on the blockchain</p>
@@ -90,7 +90,7 @@ export default function AboutPage() {
                                 </div>
                                 <div className="about-feature-item">
                                     <div className="about-feature-icon">
-                                        <span className="material-icons">verified</span>
+                                        <span className="material-icons">transparent</span>
                                     </div>
                                     <h3 className="about-feature-title">Transparent History</h3>
                                     <p className="about-feature-desc">Complete transaction history visible on-chain</p>
@@ -161,44 +161,26 @@ export default function AboutPage() {
                             <h2 className="about-section-title">The People Behind CouponMarche</h2>
                         </div>
                         <div className="about-team-grid">
+                
+                            
                             <div className="about-team-card">
                                 <div className="about-team-avatar">
                                     <span className="material-icons">person</span>
                                 </div>
-                                <h3 className="about-team-name">Alex Chen</h3>
-                                <p className="about-team-role">Founder & CEO</p>
-                                <p className="about-team-bio">
-                                    Former blockchain engineer at Coinbase with 8+ years building decentralized applications.
-                                </p>
-                            </div>
-                            <div className="about-team-card">
-                                <div className="about-team-avatar">
-                                    <span className="material-icons">person</span>
-                                </div>
-                                <h3 className="about-team-name">Sarah Martinez</h3>
-                                <p className="about-team-role">Head of Product</p>
-                                <p className="about-team-bio">
-                                    Product leader from Shopify, specializing in marketplace platforms and user experience.
-                                </p>
-                            </div>
-                            <div className="about-team-card">
-                                <div className="about-team-avatar">
-                                    <span className="material-icons">person</span>
-                                </div>
-                                <h3 className="about-team-name">David Kim</h3>
+                                <h3 className="about-team-name">Isaac kingsly</h3>
                                 <p className="about-team-role">Lead Smart Contract Developer</p>
                                 <p className="about-team-bio">
-                                    Security-focused Solidity expert with audited contracts managing $50M+ in assets.
+                                    Security-focused Solidity expert with audited contracts..
                                 </p>
                             </div>
                             <div className="about-team-card">
                                 <div className="about-team-avatar">
                                     <span className="material-icons">person</span>
                                 </div>
-                                <h3 className="about-team-name">Emily Johnson</h3>
+                                <h3 className="about-team-name">Hari Ram</h3>
                                 <p className="about-team-role">Head of Design</p>
                                 <p className="about-team-bio">
-                                    Award-winning designer creating intuitive interfaces for Web3 applications.
+                                    A developer who loves to develop the frontend and some backend as well.
                                 </p>
                             </div>
                         </div>

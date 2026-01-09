@@ -6,10 +6,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useWallet } from "@/contexts/WalletContext";
 import { getEnhancedListing } from "@/lib/marketplace";
-import { getListing, formatPrice as formatListingPrice, getStatusLabel, isListingExpired } from "@/lib/marketplace";
+import { formatPrice as formatListingPrice, getStatusLabel, isListingExpired } from "@/lib/marketplace";
 import { getEscrowContract, approveMnee, getMneeBalance, getMneeAllowance, formatTokenAmount } from "@/lib/contracts-instance";
 import { ListingStatus } from "@/lib/contracts";
-import { EnhancedListingData } from "@/lib/ipfs-metadata";
+import { EnhancedListingData, getIPFSImageUrl } from "@/lib/ipfs-metadata";
 
 export default function ListingDetailPage() {
     const params = useParams();
@@ -18,7 +18,7 @@ export default function ListingDetailPage() {
     const { wallet, ensureSepolia } = useWallet();
 
     const [listing, setListing] = useState<EnhancedListingData | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [mneeBalance, setMneeBalance] = useState<string>("0");
     const [mneeBalanceWei, setMneeBalanceWei] = useState<bigint>(BigInt(0));
@@ -26,8 +26,8 @@ export default function ListingDetailPage() {
     const [allowanceWei, setAllowanceWei] = useState<bigint>(BigInt(0));
     const [isProcessing, setIsProcessing] = useState(false);
     const [txStatus, setTxStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
-    // Moved up so it's always called in the same order
     const [priceFormatted, setPriceFormatted] = useState<string>("0");
+    const [imageError, setImageError] = useState(false);
 
     // Fetch listing data
     useEffect(() => {
@@ -38,11 +38,9 @@ export default function ListingDetailPage() {
             }
 
             try {
-                // Disable loading state for testing
-                // setIsLoading(true);
+                setIsLoading(true);
                 setError(null);
 
-                // Fetch enhanced listing with IPFS metadata
                 const listingData = await getEnhancedListing(wallet.provider, listingId);
 
                 if (!listingData) {
@@ -50,9 +48,9 @@ export default function ListingDetailPage() {
                     return;
                 }
 
+                console.log('📦 Listing data:', listingData);
                 setListing(listingData);
 
-                // Fetch user's MNEE balance and allowance
                 if (wallet.address) {
                     const balance = await getMneeBalance(wallet.provider, wallet.address);
                     const formattedBalance = await formatTokenAmount(wallet.provider, balance);
@@ -68,17 +66,15 @@ export default function ListingDetailPage() {
                 console.error('Error fetching listing:', err);
                 setError(err.message || 'Failed to fetch listing');
             } finally {
-                // Keep loading disabled for testing
                 setIsLoading(false);
             }
         }
 
         fetchListing();
-        const interval = setInterval(fetchListing, 10000); // Refresh every 10 seconds
+        const interval = setInterval(fetchListing, 10000);
         return () => clearInterval(interval);
     }, [wallet.provider, listingId, wallet.address]);
 
-    // Moved this effect up so it's not after early returns
     useEffect(() => {
         async function fetchFormattedPrice() {
             if (wallet.provider && listing) {
@@ -98,21 +94,14 @@ export default function ListingDetailPage() {
         try {
             setIsProcessing(true);
             setTxStatus({ type: null, message: '' });
-
-            // Ensure on Sepolia
             await ensureSepolia();
 
-            // Parse price amount
-            const priceAmount = listing.price;
-
-            // Approve escrow to spend tokens
-            const tx = await approveMnee(wallet.signer, priceAmount);
+            const tx = await approveMnee(wallet.signer, listing.price);
             setTxStatus({ type: null, message: 'Transaction submitted. Waiting for confirmation...' });
 
             await tx.wait();
             setTxStatus({ type: 'success', message: 'Approval successful!' });
 
-            // Refresh allowance
             if (wallet.provider && wallet.address) {
                 const newAllowance = await getMneeAllowance(wallet.provider, wallet.address);
                 const formatted = await formatTokenAmount(wallet.provider, newAllowance);
@@ -136,46 +125,37 @@ export default function ListingDetailPage() {
         try {
             setIsProcessing(true);
             setTxStatus({ type: null, message: '' });
-
-            // Ensure on Sepolia
             await ensureSepolia();
 
-            // Check if user is the seller
             if (wallet.address?.toLowerCase() === listing.seller.toLowerCase()) {
                 throw new Error('You cannot buy your own listing');
             }
 
-            // Check if listing is still available
             if (listing.status !== ListingStatus.LISTED) {
                 throw new Error('Listing is no longer available');
             }
 
-            // Check if expired
             if (isListingExpired(listing)) {
                 throw new Error('This listing has expired');
             }
 
-            // Check balance (refresh first)
             const currentBalance = await getMneeBalance(wallet.provider!, wallet.address!);
             if (currentBalance < listing.price) {
                 throw new Error('Insufficient MNEE balance');
             }
 
-            // Check allowance
             const currentAllowance = await getMneeAllowance(wallet.provider!, wallet.address!);
             if (currentAllowance < listing.price) {
                 throw new Error('Insufficient allowance. Please approve first.');
             }
 
-            // Lock payment
             const escrowContract = getEscrowContract(wallet.signer);
             const tx = await escrowContract.lockPayment(listingId);
             setTxStatus({ type: null, message: 'Transaction submitted. Waiting for confirmation...' });
 
             await tx.wait();
-            setTxStatus({ type: 'success', message: 'Payment locked successfully! The seller will now reveal the voucher.' });
+            setTxStatus({ type: 'success', message: 'Payment locked successfully! The voucher has been revealed.' });
 
-            // Refresh listing
             const updatedListing = await getEnhancedListing(wallet.provider!, listingId);
             if (updatedListing) {
                 setListing(updatedListing);
@@ -189,9 +169,7 @@ export default function ListingDetailPage() {
     };
 
     const handleConfirmVoucher = async () => {
-        if (!wallet.signer || !listing) {
-            return;
-        }
+        if (!wallet.signer || !listing) return;
 
         try {
             setIsProcessing(true);
@@ -206,13 +184,10 @@ export default function ListingDetailPage() {
             setTxStatus({ type: null, message: 'Transaction submitted...' });
 
             await tx.wait();
-            setTxStatus({ type: 'success', message: 'Voucher confirmed! Payment will be released to seller.' });
+            setTxStatus({ type: 'success', message: 'Voucher confirmed! Payment released to seller.' });
 
-            // Refresh listing
             const updatedListing = await getEnhancedListing(wallet.provider!, listingId);
-            if (updatedListing) {
-                setListing(updatedListing);
-            }
+            if (updatedListing) setListing(updatedListing);
         } catch (err: any) {
             console.error('Confirm error:', err);
             setTxStatus({ type: 'error', message: err.message || 'Failed to confirm voucher' });
@@ -222,14 +197,10 @@ export default function ListingDetailPage() {
     };
 
     const handleDisputeVoucher = async () => {
-        if (!wallet.signer || !listing) {
-            return;
-        }
+        if (!wallet.signer || !listing) return;
 
         const evidenceCID = prompt('Enter evidence CID (IPFS hash) for the dispute:');
-        if (!evidenceCID) {
-            return;
-        }
+        if (!evidenceCID) return;
 
         try {
             setIsProcessing(true);
@@ -246,11 +217,8 @@ export default function ListingDetailPage() {
             await tx.wait();
             setTxStatus({ type: 'success', message: 'Dispute raised successfully. Admin will review.' });
 
-            // Refresh listing
             const updatedListing = await getEnhancedListing(wallet.provider!, listingId);
-            if (updatedListing) {
-                setListing(updatedListing);
-            }
+            if (updatedListing) setListing(updatedListing);
         } catch (err: any) {
             console.error('Dispute error:', err);
             setTxStatus({ type: 'error', message: err.message || 'Failed to raise dispute' });
@@ -259,14 +227,21 @@ export default function ListingDetailPage() {
         }
     };
 
+    const formatExpiryDate = (timestamp: bigint) => {
+        if (timestamp === BigInt(0)) return 'No expiry';
+        const date = new Date(Number(timestamp) * 1000);
+        const isExpired = date < new Date();
+        return isExpired ? `Expired: ${date.toLocaleDateString()}` : date.toLocaleDateString();
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-off-white">
                 <Header pageType="marketplace" />
-                <div className="listing-detail-container">
-                    <div className="loading-state">
+                <div className="listing-detail-page">
+                    <div className="listing-detail-loading">
                         <div className="loading-spinner"></div>
-                        <p>Loading listing...</p>
+                        <p>Loading listing details...</p>
                     </div>
                 </div>
                 <Footer />
@@ -278,10 +253,12 @@ export default function ListingDetailPage() {
         return (
             <div className="min-h-screen bg-off-white">
                 <Header pageType="marketplace" />
-                <div className="listing-detail-container">
-                    <div className="error-state">
-                        <p className="error-message">{error || 'Listing not found'}</p>
-                        <button onClick={() => router.push('/marketplace')} className="back-btn">
+                <div className="listing-detail-page">
+                    <div className="listing-detail-error">
+                        <span className="material-icons">error_outline</span>
+                        <p>{error || 'Listing not found'}</p>
+                        <button onClick={() => router.push('/marketplace')} className="back-to-marketplace-btn">
+                            <span className="material-icons">arrow_back</span>
                             Back to Marketplace
                         </button>
                     </div>
@@ -293,152 +270,250 @@ export default function ListingDetailPage() {
 
     const isBuyer = wallet.address?.toLowerCase() === listing.buyer?.toLowerCase();
     const isSeller = wallet.address?.toLowerCase() === listing.seller.toLowerCase();
-
-    // Compare BigInt values directly
     const needsApproval = allowanceWei < listing.price;
     const hasEnoughBalance = mneeBalanceWei >= listing.price;
+
+    // Get image URLs from metadata
+    const logoUrl = listing.metadata?.images?.logo?.original
+        ? getIPFSImageUrl(listing.metadata.images.logo.original)
+        : '';
+    const voucherImageUrl = listing.metadata?.images?.voucher?.blurred
+        ? getIPFSImageUrl(listing.metadata.images.voucher.blurred)
+        : listing.previewImageUrl || '';
 
     return (
         <div className="min-h-screen bg-off-white">
             <Header pageType="marketplace" />
 
-            <div className="listing-detail-container">
-                <button onClick={() => router.push('/marketplace')} className="back-btn">
-                    ← Back to Marketplace
+            <div className="listing-detail-page">
+                <button onClick={() => router.push('/marketplace')} className="back-to-marketplace-btn">
+                    <span className="material-icons">arrow_back</span>
+                    Back to Marketplace
                 </button>
 
-                <div className="listing-detail-card">
-                    <h1 className="listing-detail-title">Listing #{listing.id}</h1>
+                <div className="listing-detail-grid">
+                    {/* Left Column - Images & Basic Info */}
+                    <div className="listing-detail-left">
+                        {/* Main Image */}
+                        <div className="listing-detail-image-container">
+                            {logoUrl && (
+                                <img
+                                    src={logoUrl}
+                                    alt="Brand logo"
+                                    className="listing-detail-logo"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                            )}
+                            <img
+                                src={!imageError && voucherImageUrl ? voucherImageUrl : "/img/blank_coupon.png"}
+                                alt={listing.title}
+                                className="listing-detail-image"
+                                onError={() => setImageError(true)}
+                            />
+                            <div className="listing-detail-image-overlay">
+                                <span className="material-icons">lock</span>
+                                <span>Full image revealed after purchase</span>
+                            </div>
+                        </div>
 
-                    <div className="listing-info-section">
-                        <div className="info-item">
-                            <span className="info-label">Status:</span>
-                            <span className={`status-badge status-${getStatusLabel(listing.status).toLowerCase().replace(' ', '-')}`}>
-                                {getStatusLabel(listing.status)}
-                            </span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Seller:</span>
-                            <span className="wallet-address-display">{listing.seller}</span>
-                        </div>
-                        {listing.buyer && listing.buyer !== '0x0000000000000000000000000000000000000000' && (
-                            <div className="info-item">
-                                <span className="info-label">Buyer:</span>
-                                <span className="wallet-address-display">{listing.buyer}</span>
-                            </div>
-                        )}
-                        <div className="info-item">
-                            <span className="info-label">Partial Code Pattern:</span>
-                            <span className="code-pattern">{listing.partialPattern || 'N/A'}</span>
-                        </div>
-                        <div className="info-item price-item">
-                            <span className="info-label">Price:</span>
-                            <span className="price-display">{priceFormatted} MNEE</span>
-                        </div>
-                        {listing.value > BigInt(0) && (
-                            <div className="info-item">
-                                <span className="info-label">Voucher Value:</span>
-                                <span className="value-display">{listing.value.toString()}</span>
-                            </div>
-                        )}
-                        {listing.expiryTimestamp > BigInt(0) && (
-                            <div className="info-item">
-                                <span className="info-label">Expires:</span>
-                                <span className="expiry-display">{new Date(Number(listing.expiryTimestamp) * 1000).toLocaleString()}</span>
+                        {/* Tags */}
+                        {listing.tags && listing.tags.length > 0 && (
+                            <div className="listing-detail-tags">
+                                {listing.tags.map((tag, i) => (
+                                    <span key={i} className="listing-tag">{tag}</span>
+                                ))}
                             </div>
                         )}
                     </div>
 
-                    {wallet.isConnected && (
-                        <div className="wallet-balance-section">
-                            <div className="balance-item">
-                                <span className="balance-label">Your MNEE Balance:</span>
-                                <span className="balance-value">{mneeBalance} MNEE</span>
+                    {/* Right Column - Details & Actions */}
+                    <div className="listing-detail-right">
+                        {/* Header */}
+                        <div className="listing-detail-header">
+                            <div className="listing-detail-title-row">
+                                <h1 className="listing-detail-title">
+                                    {listing.metadata?.title || listing.title || `Voucher #${listing.id}`}
+                                </h1>
+                                <span className={`listing-detail-status listing-detail-status--${getStatusLabel(listing.status).toLowerCase().replace(' ', '-')}`}>
+                                    {getStatusLabel(listing.status)}
+                                </span>
                             </div>
-                            <div className="balance-item">
-                                <span className="balance-label">Current Allowance:</span>
-                                <span className="balance-value">{allowance} MNEE</span>
+                            <div className="listing-detail-brand-row">
+                                <span className="listing-detail-brand">
+                                    <span className="material-icons">store</span>
+                                    {listing.metadata?.brand || listing.brand || 'Unknown Brand'}
+                                </span>
+                                <span className="listing-detail-type">{listing.metadata?.type || 'Voucher'}</span>
                             </div>
-                            {needsApproval && (
-                                <div className="warning-message approval-warning">
-                                    ⚠️ You need to approve MNEE spending first
+                        </div>
+
+                        {/* Description */}
+                        <div className="listing-detail-description">
+                            <p>{listing.metadata?.description || listing.description}</p>
+                        </div>
+
+                        {/* Price Card */}
+                        <div className="listing-detail-price-card">
+                            <div className="price-card-main">
+                                <span className="price-label">Price</span>
+                                <span className="price-value">{priceFormatted} MNEE</span>
+                            </div>
+                            {listing.metadata?.value && listing.metadata.value > 0 && (
+                                <div className="price-card-value">
+                                    <span className="material-icons">payments</span>
+                                    <span>Face Value: ₹{listing.metadata.value}</span>
                                 </div>
                             )}
-                            {!hasEnoughBalance && (
-                                <div className="warning-message balance-warning">
-                                    ⚠️ Insufficient MNEE balance
+                            {listing.metadata?.discountPercentage && listing.metadata.discountPercentage > 0 && (
+                                <div className="price-card-discount">
+                                    <span className="material-icons">local_offer</span>
+                                    <span>{listing.metadata.discountPercentage}% OFF</span>
                                 </div>
                             )}
                         </div>
-                    )}
 
-                    {txStatus.type && (
-                        <div className={`tx-status ${txStatus.type === 'success' ? 'tx-success' : 'tx-error'}`}>
-                            {txStatus.message}
-                        </div>
-                    )}
-
-                    {/* Buyer Actions */}
-                    {wallet.isConnected && !isSeller && listing.status === ListingStatus.LISTED && (
-                        <div className="buyer-actions">
-                            {needsApproval ? (
-                                <button
-                                    onClick={handleApprove}
-                                    disabled={isProcessing || !hasEnoughBalance}
-                                    className={`verified-buy-btn ${isProcessing || !hasEnoughBalance ? 'disabled' : ''}`}
-                                >
-                                    {isProcessing ? 'Processing...' : 'Approve MNEE'}
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleLockPayment}
-                                    disabled={isProcessing || !hasEnoughBalance}
-                                    className={`verified-buy-btn premium ${isProcessing || !hasEnoughBalance ? 'disabled' : ''}`}
-                                >
-                                    {isProcessing ? 'Processing...' : 'Lock Payment & Buy'}
-                                </button>
+                        {/* Info Grid */}
+                        <div className="listing-detail-info-grid">
+                            <div className="info-grid-item">
+                                <span className="material-icons">fingerprint</span>
+                                <div>
+                                    <span className="info-label">Partial Code</span>
+                                    <span className="info-value code">{listing.partialPattern || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div className="info-grid-item">
+                                <span className="material-icons">schedule</span>
+                                <div>
+                                    <span className="info-label">Expiry</span>
+                                    <span className="info-value">{formatExpiryDate(listing.expiryTimestamp)}</span>
+                                </div>
+                            </div>
+                            <div className="info-grid-item">
+                                <span className="material-icons">person</span>
+                                <div>
+                                    <span className="info-label">Seller</span>
+                                    <span className="info-value address">{listing.seller.slice(0, 6)}...{listing.seller.slice(-4)}</span>
+                                </div>
+                            </div>
+                            {listing.isVerified && (
+                                <div className="info-grid-item verified">
+                                    <span className="material-icons">verified</span>
+                                    <div>
+                                        <span className="info-label">AI Verified</span>
+                                        <span className="info-value">Authenticity checked</span>
+                                    </div>
+                                </div>
                             )}
                         </div>
-                    )}
 
-                    {/* Show why buttons are not available */}
-                    {wallet.isConnected && isSeller && (
-                        <div className="info-message seller-message">
-                            <p>📝 This is your own listing. You cannot purchase it.</p>
-                        </div>
-                    )}
+                        {/* Wallet Balance Section */}
+                        {wallet.isConnected && (
+                            <div className="listing-detail-wallet">
+                                <div className="wallet-balance-row">
+                                    <span>Your MNEE Balance:</span>
+                                    <span className="balance-amount">{mneeBalance} MNEE</span>
+                                </div>
+                                <div className="wallet-balance-row">
+                                    <span>Approved Allowance:</span>
+                                    <span className="balance-amount">{allowance} MNEE</span>
+                                </div>
+                                {needsApproval && (
+                                    <div className="wallet-warning">
+                                        <span className="material-icons">warning</span>
+                                        You need to approve MNEE spending first
+                                    </div>
+                                )}
+                                {!hasEnoughBalance && (
+                                    <div className="wallet-warning error">
+                                        <span className="material-icons">error</span>
+                                        Insufficient MNEE balance
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
-                    {wallet.isConnected && !isSeller && listing.status !== ListingStatus.LISTED && (
-                        <div className="info-message status-message">
-                            <p>⏳ This listing is not available for purchase (Status: {getStatusLabel(listing.status)})</p>
-                        </div>
-                    )}
+                        {/* Transaction Status */}
+                        {txStatus.type && (
+                            <div className={`listing-detail-tx-status ${txStatus.type}`}>
+                                <span className="material-icons">
+                                    {txStatus.type === 'success' ? 'check_circle' : 'error'}
+                                </span>
+                                {txStatus.message}
+                            </div>
+                        )}
 
-                    {/* Buyer can confirm or dispute after reveal */}
-                    {wallet.isConnected && isBuyer && listing.status === ListingStatus.REVEALED && (
-                        <div className="confirm-dispute-actions">
-                            <button
-                                onClick={handleConfirmVoucher}
-                                disabled={isProcessing}
-                                className={`verified-buy-btn ${isProcessing ? 'disabled' : ''}`}
-                            >
-                                Confirm Voucher Valid
-                            </button>
-                            <button
-                                onClick={handleDisputeVoucher}
-                                disabled={isProcessing}
-                                className={`secure-buy-btn ${isProcessing ? 'disabled' : ''}`}
-                            >
-                                Dispute Voucher
-                            </button>
-                        </div>
-                    )}
+                        {/* Action Buttons */}
+                        <div className="listing-detail-actions">
+                            {wallet.isConnected && !isSeller && listing.status === ListingStatus.LISTED && (
+                                <>
+                                    {needsApproval ? (
+                                        <button
+                                            onClick={handleApprove}
+                                            disabled={isProcessing || !hasEnoughBalance}
+                                            className="action-btn approve"
+                                        >
+                                            <span className="material-icons">check_circle</span>
+                                            {isProcessing ? 'Processing...' : 'Approve MNEE'}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={handleLockPayment}
+                                            disabled={isProcessing || !hasEnoughBalance}
+                                            className="action-btn buy"
+                                        >
+                                            <span className="material-icons">shopping_cart</span>
+                                            {isProcessing ? 'Processing...' : 'Buy Now'}
+                                        </button>
+                                    )}
+                                </>
+                            )}
 
-                    {!wallet.isConnected && (
-                        <div className="connect-wallet-message">
-                            Please connect your wallet to interact with this listing.
+                            {wallet.isConnected && isSeller && (
+                                <div className="action-message seller">
+                                    <span className="material-icons">info</span>
+                                    This is your listing. You cannot purchase it.
+                                </div>
+                            )}
+
+                            {wallet.isConnected && !isSeller && listing.status !== ListingStatus.LISTED && listing.status !== ListingStatus.REVEALED && (
+                                <div className="action-message">
+                                    <span className="material-icons">info</span>
+                                    This listing is not available (Status: {getStatusLabel(listing.status)})
+                                </div>
+                            )}
+
+                            {wallet.isConnected && isBuyer && listing.status === ListingStatus.REVEALED && (
+                                <div className="buyer-confirm-actions">
+                                    <button onClick={handleConfirmVoucher} disabled={isProcessing} className="action-btn confirm">
+                                        <span className="material-icons">thumb_up</span>
+                                        {isProcessing ? 'Processing...' : 'Confirm Working'}
+                                    </button>
+                                    <button onClick={handleDisputeVoucher} disabled={isProcessing} className="action-btn dispute">
+                                        <span className="material-icons">report_problem</span>
+                                        {isProcessing ? 'Processing...' : 'Report Issue'}
+                                    </button>
+                                </div>
+                            )}
+
+                            {!wallet.isConnected && (
+                                <div className="action-message connect">
+                                    <span className="material-icons">account_balance_wallet</span>
+                                    Connect your wallet to purchase this voucher
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                        {/* Terms & Conditions */}
+                        {listing.metadata?.terms && (
+                            <details className="listing-detail-terms">
+                                <summary>
+                                    <span className="material-icons">description</span>
+                                    Terms & Conditions
+                                </summary>
+                                <p>{listing.metadata.terms}</p>
+                            </details>
+                        )}
+                    </div>
                 </div>
             </div>
 

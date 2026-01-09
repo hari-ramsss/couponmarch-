@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useWallet } from "@/contexts/WalletContext";
-import { getEnhancedActiveListings, getAllListings } from "@/lib/marketplace";
+import { getAllListings } from "@/lib/marketplace";
 import { confirmVoucher, disputeVoucher } from "@/lib/escrow";
 import { ListingStatus } from "@/lib/contracts";
 import { EnhancedListingData } from "@/lib/ipfs-metadata";
@@ -11,13 +11,13 @@ import { resolveIPFSHash } from "@/lib/ipfs-resolver";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-export default function RevealedVouchersPage() {
+export default function MyPurchasesPage() {
     const [purchasedVouchers, setPurchasedVouchers] = useState<EnhancedListingData[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<{ [key: number]: 'confirm' | 'dispute' | null }>({});
+    const [copiedCode, setCopiedCode] = useState<number | null>(null);
     const { wallet } = useWallet();
 
-    // Fetch revealed vouchers for the current user
     useEffect(() => {
         async function fetchPurchasedVouchers() {
             if (!wallet.isConnected || !wallet.provider || !wallet.address) {
@@ -29,7 +29,6 @@ export default function RevealedVouchersPage() {
                 setLoading(true);
                 const allListings = await getAllListings(wallet.provider);
 
-                // Filter vouchers that are revealed to the current user
                 const userRevealedListings = allListings.filter(listing =>
                     listing.buyer.toLowerCase() === wallet.address?.toLowerCase() &&
                     (listing.status === ListingStatus.REVEALED ||
@@ -37,7 +36,6 @@ export default function RevealedVouchersPage() {
                         listing.status === ListingStatus.BUYER_DISPUTED)
                 );
 
-                // Enhance listings with metadata
                 const enhancedVouchers: EnhancedListingData[] = [];
                 for (const listing of userRevealedListings) {
                     try {
@@ -45,8 +43,6 @@ export default function RevealedVouchersPage() {
                         const enhanced = await enhanceListingWithMetadata(listing, wallet.provider, ipfsHash || undefined);
                         enhancedVouchers.push(enhanced);
                     } catch (error) {
-                        console.error(`Error enhancing listing ${listing.id}:`, error);
-                        // Add basic listing without metadata
                         const basicEnhanced = await enhanceListingWithMetadata(listing, wallet.provider);
                         enhancedVouchers.push(basicEnhanced);
                     }
@@ -64,120 +60,79 @@ export default function RevealedVouchersPage() {
     }, [wallet.isConnected, wallet.provider, wallet.address]);
 
     const handleConfirm = async (listingId: number) => {
-        if (!wallet.signer) {
-            alert('Please connect your wallet');
-            return;
-        }
-
+        if (!wallet.signer) return alert('Please connect your wallet');
         try {
             setActionLoading(prev => ({ ...prev, [listingId]: 'confirm' }));
-
             const tx = await confirmVoucher(wallet.signer, listingId);
             await tx.wait();
-
-            // Update the voucher status locally
-            setPurchasedVouchers(prev =>
-                prev.map(voucher =>
-                    voucher.id === listingId
-                        ? { ...voucher, status: ListingStatus.BUYER_CONFIRMED }
-                        : voucher
-                )
-            );
-
-            alert('Voucher confirmed successfully!');
+            setPurchasedVouchers(prev => prev.map(v => v.id === listingId ? { ...v, status: ListingStatus.BUYER_CONFIRMED } : v));
+            alert('Voucher confirmed!');
         } catch (error: any) {
-            console.error('Error confirming voucher:', error);
-            alert(error.message || 'Failed to confirm voucher');
+            alert(error.message || 'Failed to confirm');
         } finally {
             setActionLoading(prev => ({ ...prev, [listingId]: null }));
         }
     };
 
     const handleDispute = async (listingId: number) => {
-        if (!wallet.signer) {
-            alert('Please connect your wallet');
-            return;
-        }
-
-        const evidenceCID = prompt('Please provide evidence (IPFS CID) for your dispute:');
-        if (!evidenceCID) {
-            return;
-        }
-
+        if (!wallet.signer) return alert('Please connect your wallet');
+        const evidenceCID = prompt('Provide evidence (IPFS CID):');
+        if (!evidenceCID) return;
         try {
             setActionLoading(prev => ({ ...prev, [listingId]: 'dispute' }));
-
             const tx = await disputeVoucher(wallet.signer, listingId, evidenceCID);
             await tx.wait();
-
-            // Update the voucher status locally
-            setPurchasedVouchers(prev =>
-                prev.map(voucher =>
-                    voucher.id === listingId
-                        ? { ...voucher, status: ListingStatus.BUYER_DISPUTED }
-                        : voucher
-                )
-            );
-
-            alert('Dispute submitted successfully!');
+            setPurchasedVouchers(prev => prev.map(v => v.id === listingId ? { ...v, status: ListingStatus.BUYER_DISPUTED } : v));
+            alert('Dispute submitted!');
         } catch (error: any) {
-            console.error('Error disputing voucher:', error);
-            alert(error.message || 'Failed to submit dispute');
+            alert(error.message || 'Failed to dispute');
         } finally {
             setActionLoading(prev => ({ ...prev, [listingId]: null }));
         }
     };
 
-    const getCardBackgroundClass = (status: ListingStatus) => {
-        switch (status) {
-            case ListingStatus.REVEALED:
-                return 'bg-white border-gray-200';
-            case ListingStatus.BUYER_CONFIRMED:
-                return 'bg-green-50 border-green-200';
-            case ListingStatus.BUYER_DISPUTED:
-                return 'bg-red-50 border-red-200';
-            default:
-                return 'bg-white border-gray-200';
-        }
+    const handleCopyCode = (code: string, voucherId: number) => {
+        navigator.clipboard.writeText(code);
+        setCopiedCode(voucherId);
+        setTimeout(() => setCopiedCode(null), 2000);
     };
 
     const getStatusLabel = (status: ListingStatus) => {
         switch (status) {
-            case ListingStatus.REVEALED:
-                return 'Revealed';
-            case ListingStatus.BUYER_CONFIRMED:
-                return 'Confirmed';
-            case ListingStatus.BUYER_DISPUTED:
-                return 'Disputed';
-            default:
-                return 'Unknown';
+            case ListingStatus.REVEALED: return 'Revealed';
+            case ListingStatus.BUYER_CONFIRMED: return 'Confirmed';
+            case ListingStatus.BUYER_DISPUTED: return 'Disputed';
+            default: return 'Unknown';
         }
     };
 
-    const formatPrice = (price: bigint) => {
-        return `${(Number(price) / 1e18).toFixed(2)} MNEE`;
+    const formatMNEE = (price: bigint) => `${(Number(price) / 1e18).toFixed(2)}`;
+    const formatDate = (timestamp: bigint) => new Date(Number(timestamp) * 1000).toLocaleDateString();
+    const formatValue = (val: number | bigint | undefined) => {
+        if (!val) return null;
+        const num = typeof val === 'bigint' ? Number(val) : val;
+        if (num === 0) return null;
+        return `₹${num.toLocaleString()}`;
     };
 
-    const formatDate = (timestamp: bigint) => {
-        return new Date(Number(timestamp) * 1000).toLocaleDateString();
+    const formatExpiry = (timestamp: number | bigint | undefined) => {
+        if (!timestamp) return 'No expiry';
+        const ts = typeof timestamp === 'bigint' ? Number(timestamp) : timestamp;
+        if (ts === 0) return 'No expiry';
+        const date = new Date(ts * 1000);
+        return date < new Date() ? `Expired ${date.toLocaleDateString()}` : date.toLocaleDateString();
     };
 
     if (!wallet.isConnected) {
         return (
             <>
                 <Header pageType="vouchers" />
-                <main className="vouchers-page">
-                    <div className="vouchers-container">
-                        <div className="vouchers-empty">
-                            <div className="vouchers-empty-icon">
-                                <span className="material-icons">account_balance_wallet</span>
-                            </div>
-                            <h1 className="vouchers-empty-title">
-                                Connect Your Wallet
-                            </h1>
-                            <p className="vouchers-empty-text">
-                                Please connect your wallet to view your revealed vouchers.
-                            </p>
+                <main className="purchases-page">
+                    <div className="purchases-container">
+                        <div className="purchases-empty">
+                            <span className="material-icons">account_balance_wallet</span>
+                            <h1>Connect Your Wallet</h1>
+                            <p>Please connect your wallet to view your purchased vouchers.</p>
                         </div>
                     </div>
                 </main>
@@ -189,118 +144,183 @@ export default function RevealedVouchersPage() {
     return (
         <>
             <Header pageType="vouchers" />
-            <main className="vouchers-page">
-                <div className="vouchers-container">
-                    <div className="vouchers-header">
-                        <h1 className="vouchers-page-title">
-                            My Purchases
-                        </h1>
-                        <p className="vouchers-page-subtitle">
-                            Vouchers that have been revealed to you after purchase
-                        </p>
+            <main className="purchases-page">
+                <div className="purchases-container">
+                    <div className="purchases-header">
+                        <h1>My Purchases</h1>
+                        <p>Your purchased vouchers with revealed codes</p>
                     </div>
 
                     {loading ? (
-                        <div className="vouchers-loading">
-                            <div className="vouchers-spinner"></div>
-                            <p className="vouchers-loading-text">Loading your vouchers...</p>
-                        </div>
+                        <div className="purchases-loading"><div className="loading-spinner"></div><p>Loading...</p></div>
                     ) : purchasedVouchers.length === 0 ? (
-                        <div className="vouchers-empty">
-                            <div className="vouchers-empty-icon">
-                                <span className="material-icons">confirmation_number</span>
-                            </div>
-                            <h2 className="vouchers-empty-title">
-                                No Revealed Vouchers
-                            </h2>
-                            <p className="vouchers-empty-text">
-                                You haven't purchased any vouchers yet.
-                            </p>
-                            <a
-                                href="/marketplace"
-                                className="vouchers-cta-button"
-                            >
-                                Browse Marketplace
-                            </a>
+                        <div className="purchases-empty">
+                            <span className="material-icons">shopping_bag</span>
+                            <h2>No Purchases Yet</h2>
+                            <p>Browse the marketplace to find vouchers!</p>
+                            <a href="/marketplace" className="purchases-cta"><span className="material-icons">storefront</span>Browse Marketplace</a>
                         </div>
                     ) : (
-                        <div className="vouchers-grid">
-                            {purchasedVouchers.map((voucher) => (
-                                <div
-                                    key={voucher.id}
-                                    className={`voucher-card voucher-card--${voucher.status === ListingStatus.REVEALED ? 'revealed' : voucher.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : 'disputed'}`}
-                                >
-                                    {/* Voucher Banner Image */}
-                                    <div className="voucher-banner">
-                                        <img
-                                            src={voucher.metadata?.images?.voucher?.original ? getIPFSImageUrl(voucher.metadata.images.voucher.original) : "/img/blank_coupon.png"}
-                                            alt={voucher.metadata?.title || `Voucher #${voucher.id}`}
-                                            className="voucher-banner-img"
-                                            onError={(e) => {
-                                                e.currentTarget.src = "/img/blank_coupon.png";
-                                            }}
-                                        />
+                        <div className="purchases-grid">
+                            {purchasedVouchers.map((v) => (
+                                <div key={v.id} className={`purchase-card purchase-card--${v.status === ListingStatus.REVEALED ? 'revealed' : v.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : 'disputed'}`}>
+                                    {/* Header with Image */}
+                                    <div className="pc-header">
+                                        <div className="pc-image">
+                                            <img src={v.metadata?.images?.voucher?.original ? getIPFSImageUrl(v.metadata.images.voucher.original) : "/img/blank_coupon.png"} alt={v.title} onError={(e) => { e.currentTarget.src = "/img/blank_coupon.png"; }} />
+                                            {v.metadata?.images?.logo?.original && (
+                                                <img src={getIPFSImageUrl(v.metadata.images.logo.original)} alt="logo" className="pc-logo" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                            )}
+                                        </div>
+                                        <span className={`pc-status pc-status--${v.status === ListingStatus.REVEALED ? 'revealed' : v.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : 'disputed'}`}>
+                                            {getStatusLabel(v.status)}
+                                        </span>
                                     </div>
 
-                                    {/* Voucher Content */}
-                                    <div className="voucher-content">
-                                        <div className="voucher-header">
-                                            <h3 className="voucher-title">
-                                                {voucher.metadata?.title || `Voucher #${voucher.id}`}
-                                            </h3>
-                                            <span className={`voucher-status-badge voucher-status-badge--${voucher.status === ListingStatus.REVEALED ? 'revealed' : voucher.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : 'disputed'}`}>
-                                                {getStatusLabel(voucher.status)}
-                                            </span>
+                                    {/* Voucher Details Section */}
+                                    <div className="pc-details-section">
+                                        {/* Voucher Name */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Voucher Name</span>
+                                            <span className="pc-value title">{v.metadata?.title || v.title || `Voucher #${v.id}`}</span>
                                         </div>
 
-                                        <p className="voucher-brand">
-                                            {voucher.metadata?.brand || 'Unknown Brand'}
-                                        </p>
+                                        {/* Voucher Type */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Voucher Type</span>
+                                            <span className="pc-value">{v.metadata?.type || 'Gift Card'}</span>
+                                        </div>
 
-                                        <p className="voucher-description">
-                                            {voucher.metadata?.description || voucher.partialPattern}
-                                        </p>
+                                        {/* Brand */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Brand</span>
+                                            <span className="pc-value">{v.metadata?.brand || v.brand || 'Unknown'}</span>
+                                        </div>
 
-                                        {/* Voucher Code */}
-                                        {voucher.metadata?.code && (
-                                            <div className="voucher-code-box">
-                                                <p className="voucher-code-label">Voucher Code:</p>
-                                                <p className="voucher-code-value">
-                                                    {voucher.metadata.code}
-                                                </p>
+                                        {/* Description */}
+                                        <div className="pc-field full">
+                                            <span className="pc-label">Description</span>
+                                            <span className="pc-value desc">{v.metadata?.description || v.description || 'No description available'}</span>
+                                        </div>
+
+                                        {/* Voucher Code - Highlighted */}
+                                        <div className="pc-field full code-field">
+                                            <span className="pc-label">Voucher Code</span>
+                                            {v.metadata?.code ? (
+                                                <div className="pc-code-box">
+                                                    <code>{v.metadata.code}</code>
+                                                    <button onClick={() => handleCopyCode(v.metadata!.code, v.id)} className="pc-copy-btn">
+                                                        <span className="material-icons">{copiedCode === v.id ? 'check' : 'content_copy'}</span>
+                                                    </button>
+                                                    {copiedCode === v.id && <span className="pc-copied">Copied!</span>}
+                                                </div>
+                                            ) : v.partialPattern ? (
+                                                <div className="pc-code-box partial">
+                                                    <code>{v.partialPattern}</code>
+                                                    <span className="pc-partial-note">Partial code from blockchain</span>
+                                                </div>
+                                            ) : (
+                                                <span className="pc-value pending">IPFS metadata not found - check debug tool</span>
+                                            )}
+                                        </div>
+
+                                        {/* Partial Pattern */}
+                                        {v.partialPattern && (
+                                            <div className="pc-field">
+                                                <span className="pc-label">Partial Pattern</span>
+                                                <span className="pc-value mono">{v.partialPattern}</span>
                                             </div>
                                         )}
 
-                                        {/* Price and Value */}
-                                        <div className="voucher-price-info">
-                                            <span>Paid: {formatPrice(voucher.price)}</span>
-                                            <span>Value: {formatPrice(voucher.value)}</span>
+                                        {/* Face Value */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Face Value</span>
+                                            <span className="pc-value highlight">{formatValue(v.metadata?.value) || formatValue(v.value) || 'N/A'}</span>
+                                        </div>
+
+                                        {/* Price Paid */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Price Paid</span>
+                                            <span className="pc-value">{formatMNEE(v.price)} MNEE</span>
+                                        </div>
+
+                                        {/* Discount */}
+                                        {v.metadata?.discountPercentage && v.metadata.discountPercentage > 0 && (
+                                            <div className="pc-field">
+                                                <span className="pc-label">Discount</span>
+                                                <span className="pc-value discount">{v.metadata.discountPercentage}% OFF</span>
+                                            </div>
+                                        )}
+
+                                        {/* Expiry Date */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Expiry Date</span>
+                                            <span className="pc-value">{formatExpiry(v.metadata?.expiryTimestamp || v.expiryTimestamp)}</span>
                                         </div>
 
                                         {/* Purchase Date */}
-                                        <p className="voucher-date">
-                                            Purchased: {formatDate(voucher.createdAt)}
-                                        </p>
+                                        <div className="pc-field">
+                                            <span className="pc-label">Purchase Date</span>
+                                            <span className="pc-value">{formatDate(v.createdAt)}</span>
+                                        </div>
+
+                                        {/* Seller */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Seller</span>
+                                            <span className="pc-value mono">{v.seller.slice(0, 6)}...{v.seller.slice(-4)}</span>
+                                        </div>
+
+                                        {/* Verification Status */}
+                                        <div className="pc-field">
+                                            <span className="pc-label">Verification</span>
+                                            <span className={`pc-value ${v.isVerified ? 'verified' : ''}`}>
+                                                {v.isVerified ? '✓ AI Verified' : 'Not verified'}
+                                            </span>
+                                        </div>
+
+                                        {/* Terms */}
+                                        {v.metadata?.terms && (
+                                            <div className="pc-field full">
+                                                <span className="pc-label">Terms & Conditions</span>
+                                                <span className="pc-value terms">{v.metadata.terms}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Usage Instructions */}
+                                        {v.metadata?.usageInstructions && (
+                                            <div className="pc-field full">
+                                                <span className="pc-label">How to Use</span>
+                                                <span className="pc-value">{v.metadata.usageInstructions}</span>
+                                            </div>
+                                        )}
+
+                                        {/* Restrictions */}
+                                        {v.metadata?.restrictions && (
+                                            <div className="pc-field full">
+                                                <span className="pc-label">Restrictions</span>
+                                                <span className="pc-value">{v.metadata.restrictions}</span>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    {voucher.status === ListingStatus.REVEALED && (
-                                        <div className="voucher-actions">
-                                            <button
-                                                onClick={() => handleConfirm(voucher.id)}
-                                                disabled={actionLoading[voucher.id] === 'confirm'}
-                                                className="voucher-btn voucher-btn-confirm"
-                                            >
-                                                {actionLoading[voucher.id] === 'confirm' ? 'Confirming...' : 'Confirm'}
+                                    {/* Actions */}
+                                    {v.status === ListingStatus.REVEALED && (
+                                        <div className="pc-actions">
+                                            <button onClick={() => handleConfirm(v.id)} disabled={actionLoading[v.id] === 'confirm'} className="pc-btn confirm">
+                                                <span className="material-icons">thumb_up</span>{actionLoading[v.id] === 'confirm' ? 'Confirming...' : 'Confirm Working'}
                                             </button>
-                                            <button
-                                                onClick={() => handleDispute(voucher.id)}
-                                                disabled={actionLoading[voucher.id] === 'dispute'}
-                                                className="voucher-btn voucher-btn-dispute"
-                                            >
-                                                {actionLoading[voucher.id] === 'dispute' ? 'Disputing...' : 'Dispute'}
+                                            <button onClick={() => handleDispute(v.id)} disabled={actionLoading[v.id] === 'dispute'} className="pc-btn dispute">
+                                                <span className="material-icons">report_problem</span>{actionLoading[v.id] === 'dispute' ? 'Disputing...' : 'Report Issue'}
                                             </button>
                                         </div>
+                                    )}
+
+                                    {/* Status Footer */}
+                                    {v.status === ListingStatus.BUYER_CONFIRMED && (
+                                        <div className="pc-footer confirmed"><span className="material-icons">check_circle</span>Confirmed - Seller has been paid</div>
+                                    )}
+                                    {v.status === ListingStatus.BUYER_DISPUTED && (
+                                        <div className="pc-footer disputed"><span className="material-icons">gavel</span>Dispute submitted - Awaiting resolution</div>
                                     )}
                                 </div>
                             ))}
