@@ -147,14 +147,6 @@ export default function UploadSection({ onLogoUpload, onVoucherImageUpload }: Up
                 </div>
             )}
 
-            {/* Upload Notice */}
-            <div className="upload-notice">
-                <p>📦 <strong>Upload Process:</strong></p>
-                <p>• Images are previewed locally (not uploaded yet)</p>
-                <p>• All files will be uploaded to IPFS when you click "List Voucher for Sale"</p>
-                <p>• AI validation will occur during the upload process</p>
-            </div>
-
         </div>
     );
 }
