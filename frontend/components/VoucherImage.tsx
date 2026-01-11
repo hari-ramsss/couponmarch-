@@ -9,12 +9,11 @@ interface VoucherImageProps {
 }
 
 export default function VoucherImage({ src, alt, className = "", allowUnblur = true, forceBlurred = false }: VoucherImageProps) {
-    const [imageSrc, setImageSrc] = useState<string>("");
+    const defaultImage = "/img/blank_coupon.png";
+    const [imageSrc, setImageSrc] = useState<string>(src || defaultImage);
     const [hasErrored, setHasErrored] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isBlurred, setIsBlurred] = useState(true); // Start with blurred state
-
-    const defaultImage = "/img/blank_coupon.png";
 
     useEffect(() => {
         // Reset state when src prop changes
@@ -41,6 +40,9 @@ export default function VoucherImage({ src, alt, className = "", allowUnblur = t
         }
     };
 
+    // Ensure we never pass empty string to src
+    const finalSrc = imageSrc || defaultImage;
+
     return (
         <div className={`voucher-image-container ${className}`}>
             {isLoading && (
@@ -53,7 +55,7 @@ export default function VoucherImage({ src, alt, className = "", allowUnblur = t
                 onClick={handleImageClick}
             >
                 <img
-                    src={imageSrc}
+                    src={finalSrc}
                     alt={alt}
                     onError={handleImageError}
                     onLoad={handleImageLoad}

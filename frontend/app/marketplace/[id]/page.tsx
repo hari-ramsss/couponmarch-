@@ -71,8 +71,7 @@ export default function ListingDetailPage() {
         }
 
         fetchListing();
-        const interval = setInterval(fetchListing, 10000);
-        return () => clearInterval(interval);
+        // No auto-refresh - listing data is fetched once and updated only after user actions
     }, [wallet.provider, listingId, wallet.address]);
 
     useEffect(() => {

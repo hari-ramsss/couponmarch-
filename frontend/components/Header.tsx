@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useWallet } from "@/contexts/WalletContext";
 import { getMneeBalance, formatTokenAmount } from "@/lib/contracts-instance";
 
@@ -10,13 +11,39 @@ interface HeaderProps {
 }
 
 export default function Header({ pageType = 'home' }: HeaderProps) {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isWalletDropdownOpen, setIsWalletDropdownOpen] = useState(false);
     const [mneeBalance, setMneeBalance] = useState<string | null>(null);
     const { wallet, connect, disconnect, ensureSepolia, isLoading } = useWallet();
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const walletDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Handle search form submission
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (pageType === 'marketplace') {
+            // Update URL with search query
+            const params = new URLSearchParams(searchParams.toString());
+            if (searchQuery.trim()) {
+                params.set('search', searchQuery.trim());
+            } else {
+                params.delete('search');
+            }
+            const queryString = params.toString();
+            router.push(queryString ? `/marketplace?${queryString}` : '/marketplace');
+        } else {
+            // Navigate to marketplace with search query
+            if (searchQuery.trim()) {
+                router.push(`/marketplace?search=${encodeURIComponent(searchQuery.trim())}`);
+            } else {
+                router.push('/marketplace');
+            }
+        }
+    };
 
     // Fetch MNEE balance when wallet is connected
     useEffect(() => {
@@ -58,6 +85,29 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
         disconnect();
         setIsMobileMenuOpen(false); // Close mobile menu when disconnecting
         setIsWalletDropdownOpen(false); // Close wallet dropdown when disconnecting
+    };
+
+    // Handle switching accounts - opens MetaMask account picker
+    const handleSwitchAccount = async () => {
+        try {
+            if (window.ethereum) {
+                // Request permissions to trigger MetaMask account selector
+                await window.ethereum.request({
+                    method: 'wallet_requestPermissions',
+                    params: [{ eth_accounts: {} }],
+                });
+                setIsWalletDropdownOpen(false);
+            }
+        } catch (error: any) {
+            // Check if user rejected/cancelled the request (error code 4001)
+            // This is a normal user action, not an error - silently close dropdown
+            if (error?.code === 4001 || error?.message?.includes('User rejected')) {
+                setIsWalletDropdownOpen(false);
+                return; // Silently return, no error logging needed
+            }
+            // Only log unexpected errors
+            console.error('Failed to switch account:', error);
+        }
     };
 
     // Handle mobile menu toggle
@@ -193,20 +243,36 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                     {/* Conditional Right Section based on page type */}
                     {pageType === 'marketplace' ? (
                         /* Marketplace: Search Bar (Desktop only) */
-                        <form className="nav-form">
+                        <form className="nav-form" onSubmit={handleSearch}>
                             <input
                                 type="text"
-                                placeholder="Search vouchers..."
+                                placeholder="Search vouchers by name or brand..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className={`nav-search ${isSearchExpanded ? 'nav-search-expanded' : ''}`}
                                 onFocus={() => setIsSearchExpanded(true)}
                                 onBlur={() => setIsSearchExpanded(false)}
                             />
                             <button
-                                type="button"
+                                type="submit"
                                 className="search-btn"
                             >
                                 <span className="material-icons">search</span>
                             </button>
+                            {searchQuery && (
+                                <button
+                                    type="button"
+                                    className="search-clear-btn"
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        const params = new URLSearchParams(searchParams.toString());
+                                        params.delete('search');
+                                        router.push(`/marketplace?${params.toString()}`);
+                                    }}
+                                >
+                                    <span className="material-icons">close</span>
+                                </button>
+                            )}
                         </form>
                     ) : null}
 
@@ -256,6 +322,13 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                                         </Link>
 
                                         <div className="wallet-dropdown-divider"></div>
+                                        <button
+                                            className="wallet-dropdown-item"
+                                            onClick={handleSwitchAccount}
+                                        >
+                                            <span className="dropdown-icon material-icons">swap_horiz</span>
+                                            Switch Account
+                                        </button>
                                         <button
                                             className="wallet-dropdown-item disconnect-item"
                                             onClick={handleDisconnectWallet}

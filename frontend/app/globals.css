@@ -8413,3 +8413,249 @@ button .material-icons {
   width: 100%;
   margin-top: 0.25rem;
 }
+
+/* ========== MARKETPLACE REFRESH BUTTON ========== */
+.listings-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.listings-header-top h2 {
+  margin: 0;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--bold-teal);
+  color: white;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.5rem;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+  background-color: var(--deep-purple);
+}
+
+.refresh-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-btn .material-icons {
+  font-size: 1.25rem;
+}
+
+.refresh-btn:disabled .material-icons {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== MARKETPLACE SEARCH BOX ========== */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.5rem;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  margin: 1rem 0;
+  width: 100%;
+  max-width: 500px;
+  transition: all 0.2s;
+}
+
+.search-box:focus-within {
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+  transform: translateY(-2px);
+  border-color: var(--bold-teal);
+}
+
+.search-icon {
+  color: var(--muted-gray);
+  font-size: 1.25rem;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  font-family: var(--font-inter), "Inter", sans-serif;
+  background: transparent;
+  padding: 0.25rem 0;
+}
+
+.search-input::placeholder {
+  color: var(--muted-gray);
+  opacity: 0.7;
+}
+
+.search-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: var(--muted-gray);
+  transition: all 0.2s;
+  border-radius: 50%;
+}
+
+.search-clear-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: var(--punchy-red);
+}
+
+.search-clear-btn .material-icons {
+  font-size: 1.25rem;
+}
+
+/* ========== FILTER ENHANCEMENTS ========== */
+
+/* Clear All Filters Button */
+.clear-filters-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background-color: var(--punchy-red);
+  color: white;
+  border: 3px solid var(--pure-black);
+  border-radius: 0.5rem;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 1);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-inter), "Inter", sans-serif;
+}
+
+.clear-filters-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 5px 5px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.clear-filters-btn:active {
+  transform: translateY(0);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.clear-filters-btn .material-icons {
+  font-size: 1.25rem;
+}
+
+/* Filter Active State */
+.filter-dropdown.filter-active .filter-dropdown-header {
+  background-color: var(--bold-teal);
+  color: white;
+  border-color: var(--deep-purple);
+}
+
+/* Filter Dropdown Header with Icons */
+.filter-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.filter-dropdown-text {
+  flex: 1;
+  text-align: left;
+}
+
+.filter-dropdown-icon {
+  font-size: 1.25rem;
+  margin-left: 0.5rem;
+}
+
+/* Filter Dropdown Selected Item */
+.filter-dropdown-item.selected {
+  background-color: var(--light-mint);
+  font-weight: 600;
+}
+
+.filter-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-dropdown-item .check-icon {
+  font-size: 1rem;
+  color: var(--bold-teal);
+}
+
+/* Quick Filters Section */
+.quick-filters {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--pure-black);
+}
+
+.quick-filters h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pure-black);
+}
+
+/* Toggle Option Enhancement */
+.toggle-option {
+  margin-bottom: 0.5rem;
+  padding: 0.625rem 1rem;
+  background-color: white;
+  border: 2px solid var(--pure-black);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.toggle-option:hover {
+  background-color: var(--light-mint);
+}
+
+.toggle-option.active {
+  background-color: var(--bold-teal);
+  color: white;
+  border-color: var(--deep-purple);
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}

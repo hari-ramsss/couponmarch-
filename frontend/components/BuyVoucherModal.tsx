@@ -3,7 +3,7 @@ import { BrowserProvider, JsonRpcSigner } from "ethers";
 import VoucherImage from "./VoucherImage";
 import { getEscrowContract, getMneeBalance, getMneeAllowance, approveMnee, formatTokenAmount } from "../lib/contracts-instance";
 import { getEnhancedListing } from "../lib/marketplace";
-import { EnhancedListingData } from "../lib/ipfs-metadata";
+import { EnhancedListingData, getIPFSImageUrl } from "../lib/ipfs-metadata";
 import { ListingStatus } from "../lib/contracts";
 
 type ModalState =
@@ -47,6 +47,19 @@ export default function BuyVoucherModal({
     const [txHash, setTxHash] = useState<string>("");
     const [formattedPrice, setFormattedPrice] = useState<string>("0");
     const [formattedBalance, setFormattedBalance] = useState<string>("0");
+
+    // Debug: Log when component mounts/unmounts
+    useEffect(() => {
+        console.log('🔴 BuyVoucherModal MOUNTED for voucher:', voucherId);
+        return () => {
+            console.log('⚪ BuyVoucherModal UNMOUNTED for voucher:', voucherId);
+        };
+    }, []);
+
+    // Debug: Log state changes
+    useEffect(() => {
+        console.log('🟢 Modal state changed to:', state);
+    }, [state]);
 
     // Initialize wallet and load listing data
     useEffect(() => {
@@ -127,74 +140,112 @@ export default function BuyVoucherModal({
     };
 
     const handleApprove = async () => {
-        if (!signer || !listing) return;
+        if (!signer || !listing) {
+            console.error('❌ handleApprove: signer or listing is null');
+            return;
+        }
 
         try {
+            console.log('🔄 Starting token approval...');
             setState("APPROVING");
+
             const tx = await approveMnee(signer, listing.price);
+            console.log('📝 Approval tx submitted:', tx.hash);
             setTxHash(tx.hash);
 
+            console.log('⏳ Waiting for approval confirmation...');
             await tx.wait();
+            console.log('✅ Approval confirmed!');
 
             // Update allowance
             const newAllowance = await getMneeAllowance(provider!, userAddress);
+            console.log('💰 New allowance:', newAllowance.toString());
             setAllowance(newAllowance);
 
             // Immediately proceed to purchase
+            console.log('🚀 Proceeding to purchase after approval...');
             await handlePurchaseAfterApproval();
-        } catch (err) {
-            console.error("Approval failed:", err);
-            setError("Token approval failed. Please try again.");
+        } catch (err: any) {
+            console.error("❌ Approval failed:", err);
+            const errorMessage = err?.reason || err?.message || "Token approval failed. Please try again.";
+            setError(errorMessage);
             setState("ERROR");
         }
     };
 
     const handlePurchaseAfterApproval = async () => {
-        if (!signer || !listing) return;
+        console.log('🔄 handlePurchaseAfterApproval called');
+        console.log('📋 signer:', signer ? 'exists' : 'null');
+        console.log('📋 listing:', listing ? `ID: ${listing.id}` : 'null');
+
+        if (!signer || !listing) {
+            console.error('❌ handlePurchaseAfterApproval: signer or listing is null');
+            setError('Wallet or listing data not available. Please try again.');
+            setState("ERROR");
+            return;
+        }
 
         try {
+            console.log('🔄 Starting payment processing...');
             setState("PROCESSING");
 
+            console.log('📦 Getting escrow contract...');
             const escrowContract = getEscrowContract(signer);
+
+            console.log('💸 Calling lockPayment for listing:', listing.id);
             const tx = await escrowContract.lockPayment(listing.id);
+            console.log('📝 Payment tx submitted:', tx.hash);
             setTxHash(tx.hash);
 
+            console.log('⏳ Waiting for payment confirmation...');
             await tx.wait();
+            console.log('✅ Payment confirmed!');
 
             // Payment locked successfully, voucher is automatically revealed by contract
-            setState("REVEALED"); // Skip REVEAL waiting state
+            console.log('🎉 Setting state to REVEALED');
+            setState("REVEALED");
 
-            if (onPurchaseComplete) {
-                onPurchaseComplete();
-            }
-        } catch (err) {
-            console.error("Purchase failed:", err);
-            setError("Purchase failed. Please try again.");
+            // Don't call onPurchaseComplete here - let user go through verification first
+            console.log('✅ Purchase flow completed successfully');
+        } catch (err: any) {
+            console.error("❌ Purchase failed:", err);
+            const errorMessage = err?.reason || err?.message || "Purchase failed. Please try again.";
+            setError(errorMessage);
             setState("ERROR");
         }
     };
 
     const handlePurchase = async () => {
-        if (!signer || !listing) return;
+        console.log('🔄 handlePurchase called (direct purchase)');
+
+        if (!signer || !listing) {
+            console.error('❌ handlePurchase: signer or listing is null');
+            return;
+        }
 
         try {
+            console.log('🔄 Starting direct payment processing...');
             setState("PROCESSING");
 
             const escrowContract = getEscrowContract(signer);
+            console.log('💸 Calling lockPayment for listing:', listing.id);
             const tx = await escrowContract.lockPayment(listing.id);
+            console.log('📝 Payment tx submitted:', tx.hash);
             setTxHash(tx.hash);
 
+            console.log('⏳ Waiting for payment confirmation...');
             await tx.wait();
+            console.log('✅ Payment confirmed!');
 
             // Payment locked successfully, voucher is automatically revealed by contract
-            setState("REVEALED"); // Skip REVEAL waiting state
+            console.log('🎉 Setting state to REVEALED');
+            setState("REVEALED");
 
-            if (onPurchaseComplete) {
-                onPurchaseComplete();
-            }
-        } catch (err) {
-            console.error("Purchase failed:", err);
-            setError("Purchase failed. Please try again.");
+            console.log('✅ Direct purchase flow completed successfully');
+        } catch (err: any) {
+            console.error("❌ Direct purchase failed:", err);
+            const errorMessage = err?.reason || err?.message || "Purchase failed. Please try again.";
+            setError(errorMessage);
             setState("ERROR");
         }
     };
@@ -296,7 +347,7 @@ export default function BuyVoucherModal({
 
                             <div className="modal-voucher-preview">
                                 <VoucherImage
-                                    src={listing.metadata?.images?.voucher?.original || voucherImage || "/img/blank_coupon.png"}
+                                    src={listing.metadata?.images?.voucher?.blurred ? getIPFSImageUrl(listing.metadata.images.voucher.blurred) : (voucherImage || "/img/blank_coupon.png")}
                                     alt={listing.metadata?.title || voucherTitle}
                                     className="modal-voucher-image"
                                     allowUnblur={false}
@@ -326,99 +377,121 @@ export default function BuyVoucherModal({
                         </>
                     )}
 
-                    {state === "APPROVING" && (
-                        <>
-                            <h3>Approving Tokens</h3>
-                            <p>Please confirm the token approval in your wallet...</p>
-                            <p>After approval, we'll automatically proceed with the purchase.</p>
-                            {txHash && (
-                                <p><strong>Transaction:</strong> <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash.slice(0, 10)}...</a></p>
-                            )}
-                        </>
-                    )}
+                    {
+                        state === "APPROVING" && (
+                            <>
+                                <h3>Approving Tokens</h3>
+                                <p>Please confirm the token approval in your wallet...</p>
+                                <p>After approval, we'll automatically proceed with the purchase.</p>
+                                {txHash && (
+                                    <p><strong>Transaction:</strong> <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash.slice(0, 10)}...</a></p>
+                                )}
+                            </>
+                        )
+                    }
 
-                    {state === "PROCESSING" && (
-                        <>
-                            <h3>Processing Payment</h3>
-                            <p>Please confirm the transaction in your wallet...</p>
-                            <p>Locking funds in escrow...</p>
-                            {txHash && (
-                                <p><strong>Transaction:</strong> <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash.slice(0, 10)}...</a></p>
-                            )}
-                        </>
-                    )}
+                    {
+                        state === "PROCESSING" && (
+                            <>
+                                <h3>Processing Payment</h3>
+                                <p>Please confirm the transaction in your wallet...</p>
+                                <p>Locking funds in escrow...</p>
+                                {txHash && (
+                                    <p><strong>Transaction:</strong> <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash.slice(0, 10)}...</a></p>
+                                )}
+                            </>
+                        )
+                    }
 
-                    {state === "REVEALED" && listing && (
-                        <>
-                            <h3>Payment Successful!</h3>
+                    {
+                        state === "REVEALED" && listing && (
+                            <>
+                                <h3>Payment Successful!</h3>
 
-                            <p><span className="material-icons">check_circle</span> Your payment has been locked in escrow and the voucher has been revealed!</p>
+                                <p><span className="material-icons">check_circle</span> Your payment has been locked in escrow and the voucher has been revealed!</p>
 
-                            <div className="modal-voucher-reveal">
-                                <VoucherImage
-                                    src={listing.metadata?.images?.voucher?.original || voucherImage || "/img/blank_coupon.png"}
-                                    alt={listing.metadata?.title || voucherTitle}
-                                    className="modal-voucher-image"
-                                    allowUnblur={true}
-                                    forceBlurred={false}
-                                />
-                                <p className="voucher-reveal-note">
-                                    <span className="material-icons">check_circle</span> Voucher details have been revealed
+                                <div className="modal-voucher-reveal">
+                                    {(() => {
+                                        // Get the original voucher image URL
+                                        const voucherHash = listing.metadata?.images?.voucher?.original;
+                                        const imageUrl = voucherHash
+                                            ? getIPFSImageUrl(voucherHash)
+                                            : (voucherImage || "/img/blank_coupon.png");
+                                        console.log('🖼️ Revealed voucher image:', { voucherHash, imageUrl, voucherImage });
+                                        return (
+                                            <VoucherImage
+                                                src={imageUrl}
+                                                alt={listing.metadata?.title || voucherTitle}
+                                                className="modal-voucher-image"
+                                                allowUnblur={true}
+                                                forceBlurred={false}
+                                            />
+                                        );
+                                    })()}
+                                    <p className="voucher-reveal-note">
+                                        <span className="material-icons">check_circle</span> Voucher details have been revealed
+                                    </p>
+                                </div>
+
+                                <p><strong>Coupon Code:</strong> {listing.metadata?.code || "AMAZON-XYZ-123"}</p>
+
+                                <p>
+                                    Please test the coupon code to verify it works correctly before confirming.
                                 </p>
-                            </div>
 
-                            <p><strong>Coupon Code:</strong> {listing.metadata?.code || "AMAZON-XYZ-123"}</p>
-
-                            <p>
-                                Please test the coupon code to verify it works correctly before confirming.
-                            </p>
-
-                            <button onClick={() => setState("VERIFY")}>
-                                Continue to Verification
-                            </button>
-                        </>
-                    )}
-
-                    {state === "VERIFY" && (
-                        <>
-                            <h3>Verify Voucher</h3>
-                            <p>Did the voucher work as expected?</p>
-                            <p>Please test the coupon code before confirming.</p>
-
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                                <button onClick={handleConfirmVoucher} style={{ backgroundColor: '#4CAF50' }}>
-                                    <span className="material-icons">check_circle</span> Coupon Works
+                                <button onClick={() => setState("VERIFY")}>
+                                    Continue to Verification
                                 </button>
+                            </>
+                        )
+                    }
 
-                                <button onClick={handleDisputeVoucher} style={{ backgroundColor: '#f44336' }}>
-                                    <span className="material-icons">cancel</span> Coupon Doesn't Work
-                                </button>
-                            </div>
-                        </>
-                    )}
+                    {
+                        state === "VERIFY" && (
+                            <>
+                                <h3>Verify Voucher</h3>
+                                <p>Did the voucher work as expected?</p>
+                                <p>Please test the coupon code before confirming.</p>
 
-                    {state === "SUCCESS" && (
-                        <>
-                            <h3>Success</h3>
-                            <p><span className="material-icons">check_circle</span> Voucher confirmed! Funds have been released to the seller.</p>
-                            <p>Thank you for using our secure marketplace.</p>
-                            <button onClick={onClose}>Close</button>
-                        </>
-                    )}
+                                <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                                    <button onClick={handleConfirmVoucher} style={{ backgroundColor: '#4CAF50' }}>
+                                        <span className="material-icons">check_circle</span> Coupon Works
+                                    </button>
 
-                    {state === "FAILED" && (
-                        <>
-                            <h3>Dispute Initiated</h3>
-                            <p><span className="material-icons">sync</span> Your dispute has been submitted. An admin will review the case.</p>
-                            <p>Your payment will be refunded if the dispute is valid.</p>
-                            <button onClick={onClose}>Close</button>
-                        </>
-                    )}
+                                    <button onClick={handleDisputeVoucher} style={{ backgroundColor: '#f44336' }}>
+                                        <span className="material-icons">cancel</span> Coupon Doesn't Work
+                                    </button>
+                                </div>
+                            </>
+                        )
+                    }
 
-                </div>
+                    {
+                        state === "SUCCESS" && (
+                            <>
+                                <h3>Success</h3>
+                                <p><span className="material-icons">check_circle</span> Voucher confirmed! Funds have been released to the seller.</p>
+                                <p>Thank you for using our secure marketplace.</p>
+                                <button onClick={onClose}>Close</button>
+                            </>
+                        )
+                    }
 
-            </div>
+                    {
+                        state === "FAILED" && (
+                            <>
+                                <h3>Dispute Initiated</h3>
+                                <p><span className="material-icons">sync</span> Your dispute has been submitted. An admin will review the case.</p>
+                                <p>Your payment will be refunded if the dispute is valid.</p>
+                                <button onClick={onClose}>Close</button>
+                            </>
+                        )
+                    }
 
-        </div>
+                </div >
+
+            </div >
+
+        </div >
     );
 }
