@@ -1,364 +1,320 @@
-# 🏪 COUPONmarché 
+# 🏪 CouponMarché
 
-> A decentralized marketplace for buying and selling vouchers, coupons, and gift cards with zero fraud using AI-powered validation and blockchain-powered escrow.
+> A decentralized marketplace for buying and selling vouchers, coupons, and gift cards with **zero fraud** using AI-powered validation and blockchain-powered escrow.
 
-Built for the **MNEE Stablecoin Hackathon**, powered by the **MNEE ERC-20** token.
+**Built for the MNEE Stablecoin Hackathon** | Powered by **MNEE ERC-20** Token
 
----
-
-## 🚧 Problem
-
-Consumers often accumulate vouchers and gift cards they never use. But existing resale platforms suffer from:
-
-- ❌ **High fraud risk**
-- ❌ **Manual verification**
-- ❌ **No secure payment protection**
-- ❌ **Seller scams** (invalid/used vouchers)
-- ❌ **Buyer scams** (redeems voucher but refuses to pay)
-
-**There is no trustless, automated, secure way to convert unused vouchers into money.**
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Solidity](https://img.shields.io/badge/Solidity-^0.8.20-363636)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![React](https://img.shields.io/badge/React-19-61DAFB)
 
 ---
 
-## 💡 Our Solution
+## 🎯 Quick Start for Judges
 
-Users lose thousands in fake voucher scams. We solve this with:
+> **Want to try the app immediately?** Follow these 5 simple steps:
 
-### Key Features:
-- ✨ **AI-based coupon authenticity checks**
-- 🔗 **Ethereum smart contracts** for safe escrow
-- 💰 **MNEE ERC20 token** for trustless payments
-- 🎭 **Fraud-proof dispute resolution**
-- 🔒 **Escrow-powered transactions**
+### Prerequisites
+- [Node.js 18+](https://nodejs.org/) installed
+- [MetaMask](https://metamask.io/) browser extension
+- Sepolia testnet ETH ([Get free ETH here](https://sepoliafaucet.com/))
 
-### How It Works:
-1. Buyer payment is locked in escrow when they purchase a voucher
-2. Funds are auto-released only after verification succeeds
-3. AI validates both listing and dispute evidence
-4. Admin has final say in edge cases
+### Step 1: Clone & Install
+```bash
+git clone https://github.com/yourusername/couponmarche.git
+cd couponmarche
 
----
+# Install smart contract dependencies
+npm install
 
-## 🌟 Core Features
-
-### 🔐 Secure Listing Creation
-1. Seller uploads coupon details + image
-2. AI checks expiry, authenticity, code pattern, metadata
-3. Generates an **AI Validation Proof Hash**
-4. Valid listings go on-chain
-5. Image is blurred on frontend for protection
-
-### 🛒 Safe Buying
-1. Buyer pays using MNEE tokens
-2. Funds go to **Escrow Smart Contract**, not seller
-3. Buyer gets full code + unblurred image
-
-### 🔍 7-Hour Verification Window
-Buyer must confirm:
-- ✔ **Coupon worked** → seller gets paid
-- ✖ **Coupon failed** → buyer disputes and uploads proof
-
-### 🤖 AI-Powered Dispute Resolution
-When buyer disputes:
-1. AI analyzes failure screenshot
-2. Detects tampering
-3. OCR reads rejection message
-4. Generates a **Final Proof Hash**
-5. Admin uses this to make the final call
-
-### 🔗 Smart Contract Escrow
-Supports:
-- Locking payments
-- Releasing to seller
-- Refunding buyer
-- Admin override
-- Full transparency
-
----
-
-## 🧱 Project Architecture
-
-```
-frontend/ (Next.js)
-│
-backend/ (Node.js / Python)
-│
-├── AI Validation Engine
-│   ├─ OCR (Tesseract / Vision API)
-│   ├─ Forgery Detection (Error Level Analysis / CV)
-│   ├─ Metadata Extraction
-│   ├─ Validity Scoring
-│   └─ Proof Hash Generator
-│
-├── Storage Layer
-│   ├─ IPFS (Pinata / Web3Storage)
-│   └─ Encrypted Images
-│
-└── Blockchain Layer
-    ├─ Marketplace.sol
-    ├─ Escrow.sol
-    ├─ MNEE Token (ERC20)
-    └─ Hardhat scripts & tests
+# Install frontend dependencies
+cd frontend
+npm install
 ```
 
----
-
-## 📝 DApp Flow (Simplified)
-
-```
-SELLER → Upload Coupon
-       → Backend AI verifies (OCR + Authenticity)
-       → IPFS upload (Blurred + Original)
-       → Smart Contract stores listing
-
-BUYER → View listings (blurred / partial code)
-      → Pay with MNEE → Escrow locks funds
-      → Gets full access
-
-BUYER → Redeems voucher
-      → Confirms or Disputes
-
-DISPUTE → AI verifies screenshot
-        → Admin decides
-        → Escrow releases or refunds
+### Step 2: Configure Environment
+Create `frontend/.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_KEY
+PINATA_JWT=your_pinata_jwt_token
 ```
 
----
+> 💡 **Get API Keys:**
+> - Alchemy: https://dashboard.alchemy.com (free tier available)
+> - Pinata: https://app.pinata.cloud/keys (free tier available)
 
-## 🔗 Smart Contracts
+### Step 3: Run the Application
+```bash
+cd frontend
+npm run dev
+```
+Open **http://localhost:3000** in your browser.
 
-### 📌 Marketplace.sol
+### Step 4: Connect MetaMask
+1. Click "Connect Wallet" in the header
+2. Switch to **Sepolia Testnet** (app will prompt you)
+3. Get test MNEE tokens (see below)
 
-**Handles:**
-- Create voucher listing
-- Locking step initialization
-- Reveal step by seller
-- Buyer confirm / dispute
-- Admin intervention
-- Final payout state changes
-
-**Key Security Features:**
-- Enforced state transitions
-- Expiry validation
-- Price validation
-- Buyer address checks
-- Metadata hash verification
-
-**Events:**
-- `ListingCreated`
-- `ListingLocked`
-- `ListingRevealed`
-- `ListingBuyerConfirmed`
-- `ListingBuyerDisputed`
-- `ListingReleased`
-- `ListingRefunded`
-
-### 📌 Escrow.sol
-
-**Handles:**
-- Payment locking
-- Admin review
-- Secure release or refund
-- Final settlement
-
-**Security Features:**
-- `ReentrancyGuard` protection
-- Token transfer validation
-- Strict state control
-- `onlyBuyer` / `onlySeller` / `onlyAdmin` modifiers
+### Step 5: Try the Demo Flow
+1. **List a Voucher**: Go to `/sell`, fill in details, upload an image
+2. **Browse Marketplace**: Go to `/marketplace`, see your listing
+3. **Buy a Voucher** (use a different wallet): Click "Buy Now" on any listing
+4. **Confirm Purchase**: Go to `/My-purchases`, confirm the voucher works
+5. **Check My Listings**: Go to `/my-listings` to see your sold vouchers
 
 ---
 
-## 🧪 Testing (Hardhat)
+## 📺 Demo Walkthrough
 
-**Tests cover:**
-- ✅ Creating a listing
-- ✅ Locking funds in escrow
-- ✅ Seller reveal
-- ✅ Buyer confirm
-- ✅ Buyer dispute
-- ✅ Admin settlement
-- ✅ Refunding
-- ✅ Rejecting invalid state transitions
+### Seller Flow
+1. Navigate to **Sell** page
+2. Fill voucher details (title, type, brand, code, price)
+3. Upload voucher image
+4. Click "List Voucher for Sale"
+5. Confirm transaction in MetaMask
+6. Your voucher appears in marketplace (image is blurred for others)
 
-**Run tests:**
+### Buyer Flow
+1. Browse **Marketplace**
+2. Click "Buy Now" on a voucher
+3. Approve MNEE spend (first-time only)
+4. Confirm payment transaction
+5. Voucher code & full image revealed
+6. Test the voucher, then confirm it works
+7. Payment auto-releases to seller
+
+### Dispute Flow (if voucher doesn't work)
+1. Click "Report Issue" instead of confirming
+2. Provide evidence (IPFS CID of screenshot)
+3. Admin reviews and decides refund/release
+
+---
+
+## 🚧 Problem We Solve
+
+| Problem | How We Solve It |
+|---------|-----------------|
+| ❌ Fake vouchers sold | ✅ AI validates voucher image before listing |
+| ❌ Seller gets payment, voucher doesn't work | ✅ Escrow holds funds until buyer confirms |
+| ❌ Buyer uses voucher, refuses to pay | ✅ Payment locked BEFORE revealing voucher |
+| ❌ No recourse for disputes | ✅ Admin dispute resolution with evidence |
+| ❌ Voucher code visible before purchase | ✅ Image blurred, code partially masked |
+
+---
+
+## 💡 Key Features
+
+| Feature | Implementation |
+|---------|----------------|
+| ✨ **AI Verification** | Image analysis validates voucher authenticity |
+| 🔗 **Blockchain Escrow** | Smart contract holds funds securely |
+| 💰 **MNEE Payments** | Stablecoin for predictable pricing |
+| 🔒 **Secure Images** | Sharp.js blurs images until purchase |
+| ⚡ **Auto-Release** | Funds auto-release when buyer confirms |
+| 📦 **IPFS Storage** | Decentralized metadata via Pinata |
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Next.js | 16.0.7 | React framework with App Router |
+| React | 19.2.0 | UI component library |
+| TypeScript | ^5 | Type-safe JavaScript |
+| Tailwind CSS | ^4 | Utility-first styling |
+| Ethers.js | ^6.16.0 | Blockchain interactions |
+| Sharp | ^0.32.6 | Image processing |
+
+### Blockchain
+| Technology | Purpose |
+|------------|---------|
+| Solidity ^0.8.20 | Smart contract language |
+| Hardhat ^2.27.1 | Development & testing |
+| OpenZeppelin ^4.9.3 | Audited contract libraries |
+| Sepolia Testnet | Test network deployment |
+
+### Storage
+| Service | Purpose |
+|---------|---------|
+| IPFS (Pinata) | Decentralized file storage |
+
+---
+
+## 📜 Smart Contracts
+
+### Deployed Addresses (Sepolia Testnet)
+
+| Contract | Address |
+|----------|---------|
+| MNEE Token | `0xC43765C9bD7F1fae094c173b8a61C072a0fd9755` |
+| Marketplace | `0x9a4C9b8b9fEd8F21eC075bFA9d1cF49046c3d4B3` |
+| Escrow | `0x07795A0BE1088Ea08fa6043524eeF6AB03c0408e` |
+
+### VoucherMarketplace.sol
+Manages voucher listings with 10 lifecycle states:
+- `LISTED` → `LOCKED` → `REVEALED` → `RELEASED`
+- Supports cancel, disputes, and admin intervention
+
+### VoucherEscrow.sol
+Secure payment handling:
+- `lockPayment()` - Locks buyer payment, auto-reveals voucher
+- `confirmVoucher()` - Auto-releases funds to seller
+- `disputeVoucher()` - Initiates dispute with evidence
+- `refundPayment()` - Admin refunds buyer
+
+---
+
+## 🏗️ Project Structure
+
+```
+couponmarche/
+├── contracts/                    # Solidity smart contracts
+│   ├── VoucherMarketplace.sol   # Listing management
+│   ├── VoucherEscrow.sol        # Payment escrow
+│   └── mocks/MockERC20.sol      # Test MNEE token
+│
+├── frontend/                     # Next.js 16 application
+│   ├── app/
+│   │   ├── page.tsx             # Home
+│   │   ├── marketplace/         # Browse vouchers
+│   │   ├── sell/                # List vouchers
+│   │   ├── my-listings/         # Seller dashboard
+│   │   ├── My-purchases/        # Buyer dashboard
+│   │   └── api/                 # Backend APIs
+│   ├── components/              # React components
+│   ├── lib/                     # Utilities & contract calls
+│   └── contexts/                # React contexts
+│
+├── scripts/                     # Deployment scripts
+├── test/                        # Hardhat tests
+└── hardhat.config.js
+```
+
+---
+
+## � Third-Party APIs & SDKs
+
+| Service | Purpose | License |
+|---------|---------|---------|
+| [Pinata](https://pinata.cloud) | IPFS pinning | MIT |
+| [Alchemy](https://alchemy.com) | Ethereum RPC | ToS |
+| [OpenZeppelin](https://openzeppelin.com) | Smart contracts | MIT |
+| [Ethers.js](https://ethers.org) | Web3 library | MIT |
+| [Sharp](https://sharp.pixelplumbing.com) | Image processing | Apache-2.0 |
+| [MetaMask](https://metamask.io) | Wallet | ConsenSys ToS |
+
+---
+
+## 🧪 Testing
+
+### Run Smart Contract Tests
 ```bash
 npx hardhat test
 ```
 
-**Run specific test:**
+### Run Specific Test
 ```bash
 npx hardhat test test/escrow.test.js
 npx hardhat test test/MarketPlace.test.js
 ```
 
----
-
-## 🧠 AI Validation Engine
-
-### 1️⃣ Initial Listing Validation
-- Extracts expiry date
-- OCR of coupon text
-- Detects tampering (Image Error Level Analysis)
-- Validity score (0–100)
-- **AI Initial Proof Hash** stored on-chain
-
-### 2️⃣ Dispute Validation
-- OCR failure screenshot
-- Compare metadata
-- Detect fake evidence
-- **Final Proof Hash** sent to admin
+### Test Coverage
+- ✅ Listing creation & cancellation
+- ✅ Payment locking & escrow
+- ✅ Auto-reveal on payment
+- ✅ Buyer confirmation & auto-release
+- ✅ Dispute flow
+- ✅ Admin refund/release
+- ✅ Access control validation
 
 ---
 
-## 🎨 Frontend (Next.js + Wagmi)
+## 🛡️ Security Features
 
-**Includes:**
-- 🔌 Wallet connection
-- 📝 Create Listing form
-- 🤖 AI validation progress UI
-- 🛒 Marketplace page
-- 🎫 Voucher reveal page
-- ⏱️ Verification countdown (7 hours)
-- 🚨 Dispute submission UI
-- 👨‍💼 Admin panel
-
----
-
-## 🗂️ Project Folder Structure
-
-```
-root/
-├── contracts/
-│   ├── VoucherMarketplace.sol
-│   ├── VoucherEscrow.sol
-│   └── mocks/
-│       ├── MockMarketplace.sol
-│       └── MockERC20.sol
-│
-├── test/
-│   ├── MarketPlace.test.js
-│   └── escrow.test.js
-│
-├── scripts/
-│   └── deploy.js
-│
-├── backend/
-│   ├── app.js (API)
-│   ├── ai/
-│   │   ├── ocr.js
-│   │   ├── tampering.js
-│   │   └── validityScore.js
-│   └── storage/
-│       └── ipfs.js
-│
-├── frontend/
-│   ├── components/
-│   ├── pages/
-│   └── hooks/
-│
-└── README.md
-```
+| Feature | Implementation |
+|---------|----------------|
+| Reentrancy Protection | OpenZeppelin `ReentrancyGuard` |
+| Access Control | `onlyBuyer`, `onlySeller`, `onlyAdmin`, `onlyEscrow` |
+| State Machine | Enforced transition validation |
+| Input Validation | Zero-address, price > 0, expiry checks |
+| Image Privacy | Blurred until purchase confirmed |
+| Code Privacy | Partial pattern shown publicly |
 
 ---
 
-## 🚀 Deployment Guide
+## 🔧 Environment Variables
 
-### 1. Install Dependencies
-```bash
-npm install
-```
-
-### 2. Compile Contracts
-```bash
-npx hardhat compile
-```
-
-### 3. Run Tests
-```bash
-npx hardhat test
-```
-
-### 4. Deploy Contracts
-```bash
-npx hardhat run scripts/deploy.js --network sepolia
-```
-
-### 5. Update Frontend ENV
+### Root (`/.env`)
 ```env
-NEXT_PUBLIC_MARKETPLACE_ADDRESS=0x...
-NEXT_PUBLIC_ESCROW_ADDRESS=0x...
-NEXT_PUBLIC_MNEE_ADDRESS=0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+PRIVATE_KEY=deployer_wallet_private_key
 ```
 
-### 6. Start Backend
-```bash
-cd backend
-npm run dev
-```
-
-### 7. Start Frontend
-```bash
-cd frontend
-npm run dev
+### Frontend (`/frontend/.env.local`)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+PINATA_JWT=your_pinata_jwt_token
 ```
 
 ---
 
-## 📜 License
+## 🚀 Deployment
 
-MIT License
+### Deploy All Contracts
+```bash
+npm run deploy:all:sepolia
+```
+
+### Individual Deployments
+```bash
+npm run deploy:token        # MockERC20
+npm run deploy:marketplace  # Marketplace
+npm run deploy:escrow       # Escrow
+```
+
+### Update Frontend Addresses
+After deployment, update addresses in `frontend/lib/contracts.ts`
 
 ---
 
-## 🤝 Contributing
+## 🏆 Why MNEE?
 
-Contributions are welcome! Please open an issue or submit a pull request.
+| Benefit | For CouponMarché |
+|---------|------------------|
+| 💵 Stable Value | Predictable voucher pricing |
+| ⚡ Low Fees | Micropayments viable |
+| 🔒 Transparency | On-chain escrow visible |
+| � Accessibility | No bank account needed |
+
+---
+
+## 🔮 Future Roadmap
+
+- [ ] Multi-chain (Polygon, Arbitrum)
+- [ ] NFT-based voucher ownership
+- [ ] Seller reputation system
+- [ ] AI price suggestions
+- [ ] Mobile app (React Native)
+- [ ] Batch listings
+- [ ] Analytics dashboard
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE)
 
 ---
 
 ## 📧 Contact
 
-For questions or support, reach out via the hackathon platform or open an issue on GitHub.
+Questions? Open an issue or reach out via the hackathon platform.
 
 ---
 
-## 🏆 Hackathon Submission
-
-**Built with ❤️ for the MNEE Stablecoin Hackathon**
-
-### Why MNEE?
-- Stable value for predictable pricing
-- Fast, low-cost transactions
-- Perfect for micropayments (voucher resale)
-- Built-in trust through blockchain transparency
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] Multi-chain support (Polygon, Arbitrum)
-- [ ] NFT-based voucher ownership
-- [ ] Reputation system for sellers
-- [ ] Automated price suggestions using AI
-- [ ] Mobile app (React Native)
-- [ ] Integration with major voucher providers
-- [ ] Batch listing support
-- [ ] Advanced analytics dashboard
-
----
-
-## 🛡️ Security Considerations
-
-- ✅ ReentrancyGuard on all payment functions
-- ✅ State machine validation
-- ✅ Access control modifiers
-- ✅ Expiry checks before locking
-- ✅ Zero-address validation
-- ✅ Price validation (must be > 0)
-- ✅ Escrow-only state transitions
-- ✅ Event logging for transparency
-
----
-
-**Built with ❤️ for the MNEE Stablecoin Hackathon**
+**Made with ❤️ for the MNEE Stablecoin Hackathon**
