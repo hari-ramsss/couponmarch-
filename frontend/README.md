@@ -1,36 +1,138 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CouponMarch Frontend (Next.js)
 
-## Getting Started
+A Next.js 13+ app for the CouponMarch marketplace — a web frontend that integrates with Next.js API routes for IPFS uploads and with on-chain smart contracts (VoucherMarketplace, VoucherEscrow) for listing, buying, and escrow workflows.
 
-First, run the development server:
+---
+
+## 🔍 Overview
+
+This repository contains the frontend application (Next.js App Router) powering the marketplace UI, file uploads to IPFS (Pinata), image processing, and client-side contract interactions (via ethers). API routes under `app/api/*` provide the server-side upload and verification endpoints.
+
+Key capabilities:
+- Upload voucher images, logos, and metadata to IPFS (Pinata) with image processing (thumbnails, blur, resize) 🔧
+- Store metadata CID for vouchers and serve via IPFS gateway 🌐
+- Interact with smart contracts (marketplace & escrow) using `ethers` and the built-in `lib/contracts.ts` config ⚖️
+- Health check and helper API routes under `app/api/*`
+
+---
+
+## 🚀 Quickstart
+
+Prerequisites:
+- Node.js (v18+ recommended)
+- npm, pnpm or yarn
+- (Optional) Hardhat/Local node for local blockchain testing
+
+Install and run locally:
 
 ```bash
+cd frontend
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚙️ Environment Variables
 
-## Learn More
+Create `frontend/.env.local` and add the values you need. Common variables used by the app:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+# IPFS / Pinata
+PINATA_JWT=your_pinata_jwt_token_here
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Client -> Next API base
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# RPC endpoint for the chain you connect to (e.g. local Hardhat or Sepolia)
+NEXT_PUBLIC_RPC_URL=http://localhost:8545
+```
 
-## Deploy on Vercel
+After deploying contracts for a real or local network, update contract addresses in `lib/contracts.ts` (see the top of the file). The project uses those constants for on-chain calls.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🧪 Local Blockchain / Contracts
+
+To test smart contract flows locally:
+
+1. Start a Hardhat node from the repository root (not the frontend folder):
+
+```bash
+# from repo root
+npx hardhat node
+```
+
+2. Deploy contracts (scripts available in the `scripts/` folder):
+
+```bash
+node scripts/deployMockERC20.js
+# or
+node scripts/deployAll.js
+```
+
+3. Copy deployed addresses into `frontend/lib/contracts.ts` and set `NEXT_PUBLIC_RPC_URL` to `http://localhost:8545`.
+
+---
+
+## 📁 API Routes (Server-side)
+
+Implemented under `app/api` (see `BACKEND_MIGRATION.md`):
+- `GET /api/health` — health check
+- `POST /api/upload/voucher-logo` — upload logo image (returns IPFS hashes)
+- `POST /api/upload/voucher-image` — upload voucher image (returns multiple sizes/CIDs)
+- `POST /api/upload/voucher-metadata` — publish voucher metadata to IPFS (returns CID)
+
+These routes wrap Pinata uploads and internal image processing (uses `sharp`).
+
+---
+
+## 🛠 Important Files & Locations
+
+- `app/` — Next.js app routes and pages
+- `app/api/*` — Server-side API routes for upload & verification
+- `lib/ipfs-service.ts` — helpers for uploading to Pinata
+- `lib/contracts.ts` — network config, ABIs and contract addresses (replace with your deployed addresses)
+- `components/` — React components used across the app
+
+---
+
+## ✅ Testing & Linting
+
+- Lint: `npm run lint`
+- There are integration tests for core contracts in the repo root (see `test/`), and the frontend includes utility tests and API route checks under `frontend/test-*` (where applicable).
+
+---
+
+## 📦 Deployment
+
+- The frontend is a standard Next.js app and can be deployed on Vercel or any Node host that supports Next.js.
+- Ensure `PINATA_JWT` and runtime env vars are set in your deployment environment.
+- When deploying to production, point `NEXT_PUBLIC_API_URL` to the production domain and update contract addresses to the network you deployed to (e.g., Sepolia or mainnet).
+
+---
+
+## 🔧 Troubleshooting
+
+- IPFS uploads failing: verify `PINATA_JWT` and API limits on Pinata. See `BACKEND_MIGRATION.md` for diagnostics.
+- Contract calls failing: make sure `NEXT_PUBLIC_RPC_URL` is correct and `lib/contracts.ts` has the correct addresses.
+- Image processing errors: ensure `sharp` is installed (platform-specific build) and image files are supported.
+
+---
+
+## Contributing
+
+- Add features or bugfixes as PRs to the `frontend/` folder and include changelog notes.
+- When touching contract integrations, prefer tests and document address changes.
+
+---
+
+## License
+
+See the repository root for license information.
+
+
+Enjoy building! ⚡
+
