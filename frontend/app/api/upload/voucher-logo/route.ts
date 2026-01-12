@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
             originalName: file.name,
         });
 
-        const thumbnailUpload = await uploadToIPFS(processedImages.images.thumbnail, {
+        const thumbnailUpload = await uploadToIPFS(processedImages.images.thumbnail!, {
             name: `logo-thumb-${uploadId}`,
             type: 'voucher-logo-thumbnail',
             originalName: `thumb_${file.name}`,

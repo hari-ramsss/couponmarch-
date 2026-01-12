@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
             originalName: file.name,
         });
 
-        const blurredUpload = await uploadToIPFS(processedImages.images.blurred, {
+        const blurredUpload = await uploadToIPFS(processedImages.images.blurred!, {
             name: `voucher-blurred-${uploadId}`,
             type: 'voucher-image-blurred',
             originalName: `blurred_${file.name}`,
         });
 
-        const thumbnailUpload = await uploadToIPFS(processedImages.images.thumbnail, {
+        const thumbnailUpload = await uploadToIPFS(processedImages.images.thumbnail!, {
             name: `voucher-thumb-${uploadId}`,
             type: 'voucher-image-thumbnail',
             originalName: `thumb_${file.name}`,
