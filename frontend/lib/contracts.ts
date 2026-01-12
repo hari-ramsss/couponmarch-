@@ -89,20 +89,11 @@ export const ESCROW_ABI = [
  * Example format:
  * export const MOCK_ERC20_ADDRESS = '0x1234567890123456789012345678901234567890';
  */
-export const MOCK_ERC20_ADDRESS = '0x58cc5202F8aeC0B29003882a5921CC08db29bAC4'; // TODO: Replace with deployed MockERC20 address
-export const MARKETPLACE_ADDRESS = '0xB8a08eeb833CE7173D65B3eC537F5d3a8C0164e8'; // TODO: Replace with deployed VoucherMarketplace address
-export const ESCROW_ADDRESS = '0x3D8373564d5503cA61c4A104a8Ee1a8E8C506F87'; // TODO: Replace with deployed VoucherEscrow address
+export const MOCK_ERC20_ADDRESS = '0xC43765C9bD7F1fae094c173b8a61C072a0fd9755'; // TODO: Replace with deployed MockERC20 address
+export const MARKETPLACE_ADDRESS = '0x9a4C9b8b9fEd8F21eC075bFA9d1cF49046c3d4B3'; // TODO: Replace with deployed VoucherMarketplace address
+export const ESCROW_ADDRESS = '0x07795A0BE1088Ea08fa6043524eeF6AB03c0408e'; // TODO: Replace with deployed VoucherEscrow address
 
-// Old Contracts 
-// export const MOCK_ERC20_ADDRESS = '0x2d8E8f15a61f2820e6d493Cd144D28ffFb9E0D31'; // TODO: Replace with deployed MockERC20 address
-// export const MARKETPLACE_ADDRESS = '0x60f1389c58b05F2E201D28121738f9B5249e8D00'; // TODO: Replace with deployed VoucherMarketplace address
-// export const ESCROW_ADDRESS = '0x32568bCD40f93D54465156923262fACd137D233F'; // TODO: Replace with deployed VoucherEscrow address
 
-// New Contracts 
-// Deployed Addresses:
-//    Token (MNEE):     0x58cc5202F8aeC0B29003882a5921CC08db29bAC4
-//    Marketplace:                0xB8a08eeb833CE7173D65B3eC537F5d3a8C0164e8
-//    Escrow:                     0x3D8373564d5503cA61c4A104a8Ee1a8E8C506F87
 
 // Marketplace Status enum (matches contract)
 export enum ListingStatus {

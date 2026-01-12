@@ -280,11 +280,12 @@ contract Marketplace is Ownable {
         emit ListingBuyerDisputed(id, L.buyer, evidenceCID);
     }
 
-    /// @notice Called by escrow when release executed
+    /// @notice Called by escrow when release executed (allows direct release from REVEALED for auto-release)
     function markReleased(uint256 id) external onlyEscrow {
         Listing storage L = listings[id];
         require(
-            L.status == Status.BUYER_CONFIRMED ||
+            L.status == Status.REVEALED ||
+                L.status == Status.BUYER_CONFIRMED ||
                 L.status == Status.AWAITING_ADMIN,
             "Marketplace: invalid state for release"
         );

@@ -3889,6 +3889,15 @@ body.mobile-menu-open {
   font-family: var(--font-fredoka), system-ui, sans-serif;
 }
 
+/* Loading dots animation for transaction states */
+.loading-dots {
+  display: inline-block;
+  width: 2ch;
+  text-align: left;
+  color: var(--bold-teal);
+  font-weight: 700;
+}
+
 .modal-body p {
   color: var(--muted-gray);
   font-size: 0.9375rem;

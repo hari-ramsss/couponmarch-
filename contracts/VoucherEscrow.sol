@@ -154,14 +154,26 @@ contract Escrow is ReentrancyGuard {
     }
 
     // ------------------ BUYER ACKNOWLEDGES VALID VOUCHER ------------------
+    // Auto-releases payment to seller when buyer confirms voucher works
 
-    function confirmVoucher(uint256 id) external onlyBuyer(id) {
-        (, , , , , , , uint8 status, , , ) = marketplace.getListing(id);
+    function confirmVoucher(uint256 id) external onlyBuyer(id) nonReentrant {
+        (, address seller, , , , , , uint8 status, , , ) = marketplace.getListing(id);
         require(status == 3, "Must be REVEALED"); // Status.REVEALED = 3
 
-        marketplace.markBuyerConfirmed(id);
+        uint256 amount = escrowData[id].lockedAmount;
+        require(amount > 0, "No funds locked");
+
+        // Clear escrow data
+        escrowData[id].lockedAmount = 0;
+
+        // Update marketplace status directly to RELEASED
+        marketplace.markReleased(id);
+
+        // Transfer funds to seller immediately
+        require(mneeToken.transfer(seller, amount), "Transfer to seller failed");
 
         emit BuyerConfirmed(id);
+        emit Released(id, seller, amount);
     }
 
     // ------------------ BUYER CLAIMS VOUCHER IS INVALID ------------------

@@ -6,6 +6,20 @@ import { getEnhancedListing } from "../lib/marketplace";
 import { EnhancedListingData, getIPFSImageUrl } from "../lib/ipfs-metadata";
 import { ListingStatus } from "../lib/contracts";
 
+// Animated loading dots component that cycles through . .. ... ....
+function LoadingDots() {
+    const [dotCount, setDotCount] = useState(1);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setDotCount((prev) => (prev >= 4 ? 1 : prev + 1));
+        }, 400);
+        return () => clearInterval(interval);
+    }, []);
+
+    return <span className="loading-dots">{".".repeat(dotCount)}</span>;
+}
+
 type ModalState =
     | "LOADING"
     | "PREVIEW"
@@ -315,8 +329,8 @@ export default function BuyVoucherModal({
 
                     {state === "LOADING" && (
                         <>
-                            <h3>Loading...</h3>
-                            <p>Fetching voucher details and checking wallet...</p>
+                            <h3>Loading<LoadingDots /></h3>
+                            <p>Fetching voucher details and checking wallet<LoadingDots /></p>
                         </>
                     )}
 
@@ -380,8 +394,8 @@ export default function BuyVoucherModal({
                     {
                         state === "APPROVING" && (
                             <>
-                                <h3>Approving Tokens</h3>
-                                <p>Please confirm the token approval in your wallet...</p>
+                                <h3>Approving Tokens<LoadingDots /></h3>
+                                <p>Please confirm the token approval in your wallet<LoadingDots /></p>
                                 <p>After approval, we'll automatically proceed with the purchase.</p>
                                 {txHash && (
                                     <p><strong>Transaction:</strong> <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash.slice(0, 10)}...</a></p>
@@ -393,9 +407,9 @@ export default function BuyVoucherModal({
                     {
                         state === "PROCESSING" && (
                             <>
-                                <h3>Processing Payment</h3>
-                                <p>Please confirm the transaction in your wallet...</p>
-                                <p>Locking funds in escrow...</p>
+                                <h3>Processing Payment<LoadingDots /></h3>
+                                <p>Please confirm the transaction in your wallet<LoadingDots /></p>
+                                <p>Locking funds in escrow<LoadingDots /></p>
                                 {txHash && (
                                     <p><strong>Transaction:</strong> <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noopener noreferrer">{txHash.slice(0, 10)}...</a></p>
                                 )}
