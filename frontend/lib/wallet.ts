@@ -59,7 +59,7 @@ export async function switchToSepolia(): Promise<void> {
   }
 
   try {
-    await window.ethereum.request({
+    await window.ethereum!.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: NETWORK_CONFIG.chainId }],
     });
@@ -67,7 +67,7 @@ export async function switchToSepolia(): Promise<void> {
     // This error code indicates that the chain has not been added to MetaMask
     if (switchError.code === 4902) {
       try {
-        await window.ethereum.request({
+        await window.ethereum!.request({
           method: 'wallet_addEthereumChain',
           params: [NETWORK_CONFIG],
         });
@@ -97,7 +97,7 @@ export async function getWalletState(): Promise<WalletState | null> {
   }
 
   try {
-    const provider = new BrowserProvider(window.ethereum);
+    const provider = new BrowserProvider(window.ethereum!);
     const accounts = await provider.listAccounts();
     
     if (accounts.length === 0) {
@@ -136,10 +136,10 @@ export function onAccountsChanged(callback: (accounts: string[]) => void): () =>
     return () => {};
   }
 
-  window.ethereum.on('accountsChanged', callback);
+  window.ethereum!.on('accountsChanged', callback);
   
   return () => {
-    window.ethereum.removeListener('accountsChanged', callback);
+    window.ethereum!.removeListener('accountsChanged', callback);
   };
 }
 
@@ -151,10 +151,10 @@ export function onChainChanged(callback: (chainId: string) => void): () => void 
     return () => {};
   }
 
-  window.ethereum.on('chainChanged', callback);
+  window.ethereum!.on('chainChanged', callback);
   
   return () => {
-    window.ethereum.removeListener('chainChanged', callback);
+    window.ethereum!.removeListener('chainChanged', callback);
   };
 }
 
