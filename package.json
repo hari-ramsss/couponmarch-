@@ -18,6 +18,7 @@
     "deploy:all": "hardhat run scripts/deployAll.js",
     "deploy:all:localhost": "hardhat run scripts/deployAll.js --network localhost",
     "deploy:all:sepolia": "hardhat run scripts/deployAll.js --network sepolia",
+    "deploy:all:mainnet": "hardhat run scripts/deployAllMainnet.js --network mainnet",
     "deploy:token": "hardhat run scripts/deployMockERC20.js",
     "deploy:marketplace": "hardhat run scripts/deployMarketplace.js",
     "deploy:escrow": "hardhat run scripts/deployEscrow.js"
