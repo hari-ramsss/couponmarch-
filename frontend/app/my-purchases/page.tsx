@@ -33,7 +33,8 @@ export default function MyPurchasesPage() {
                     listing.buyer.toLowerCase() === wallet.address?.toLowerCase() &&
                     (listing.status === ListingStatus.REVEALED ||
                         listing.status === ListingStatus.BUYER_CONFIRMED ||
-                        listing.status === ListingStatus.BUYER_DISPUTED)
+                        listing.status === ListingStatus.BUYER_DISPUTED ||
+                        listing.status === ListingStatus.RELEASED)
                 );
 
                 const enhancedVouchers: EnhancedListingData[] = [];
@@ -102,6 +103,7 @@ export default function MyPurchasesPage() {
             case ListingStatus.REVEALED: return 'Revealed';
             case ListingStatus.BUYER_CONFIRMED: return 'Confirmed';
             case ListingStatus.BUYER_DISPUTED: return 'Disputed';
+            case ListingStatus.RELEASED: return 'Completed';
             default: return 'Unknown';
         }
     };
@@ -163,7 +165,7 @@ export default function MyPurchasesPage() {
                     ) : (
                         <div className="purchases-grid">
                             {purchasedVouchers.map((v) => (
-                                <div key={v.id} className={`purchase-card purchase-card--${v.status === ListingStatus.REVEALED ? 'revealed' : v.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : 'disputed'}`}>
+                                <div key={v.id} className={`purchase-card purchase-card--${v.status === ListingStatus.REVEALED ? 'revealed' : v.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : v.status === ListingStatus.RELEASED ? 'completed' : 'disputed'}`}>
                                     {/* Header with Image */}
                                     <div className="pc-header">
                                         <div className="pc-image">
@@ -172,7 +174,7 @@ export default function MyPurchasesPage() {
                                                 <img src={getIPFSImageUrl(v.metadata.images.logo.original)} alt="logo" className="pc-logo" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                             )}
                                         </div>
-                                        <span className={`pc-status pc-status--${v.status === ListingStatus.REVEALED ? 'revealed' : v.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : 'disputed'}`}>
+                                        <span className={`pc-status pc-status--${v.status === ListingStatus.REVEALED ? 'revealed' : v.status === ListingStatus.BUYER_CONFIRMED ? 'confirmed' : v.status === ListingStatus.RELEASED ? 'completed' : 'disputed'}`}>
                                             {getStatusLabel(v.status)}
                                         </span>
                                     </div>
@@ -318,6 +320,9 @@ export default function MyPurchasesPage() {
                                     {/* Status Footer */}
                                     {v.status === ListingStatus.BUYER_CONFIRMED && (
                                         <div className="pc-footer confirmed"><span className="material-icons">check_circle</span>Confirmed - Seller has been paid</div>
+                                    )}
+                                    {v.status === ListingStatus.RELEASED && (
+                                        <div className="pc-footer completed"><span className="material-icons">verified</span>Completed - Transaction finalized</div>
                                     )}
                                     {v.status === ListingStatus.BUYER_DISPUTED && (
                                         <div className="pc-footer disputed"><span className="material-icons">gavel</span>Dispute submitted - Awaiting resolution</div>
