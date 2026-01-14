@@ -313,7 +313,7 @@ function HeaderContent({ pageType = 'home' }: HeaderProps) {
                                 {/* Wallet Dropdown Menu */}
                                 {isWalletDropdownOpen && (
                                     <div className="wallet-dropdown-menu">
-                                        <Link href="/My-purchases" className="wallet-dropdown-item" onClick={handleNavClick}>
+                                        <Link href="/my-purchases" className="wallet-dropdown-item" onClick={handleNavClick}>
                                             <span className="dropdown-icon material-icons">confirmation_number</span>
                                             My Vouchers
                                         </Link>
@@ -413,7 +413,7 @@ function HeaderContent({ pageType = 'home' }: HeaderProps) {
 
                                 {/* Mobile Wallet Menu Items */}
                                 <div className="mobile-wallet-menu">
-                                    <Link href="/My-purchases" className="mobile-wallet-menu-item" onClick={handleNavClick}>
+                                    <Link href="/my-purchases" className="mobile-wallet-menu-item" onClick={handleNavClick}>
                                         <span className="mobile-menu-icon material-icons">confirmation_number</span>
                                         My Vouchers
                                     </Link>
