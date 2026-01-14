@@ -41,13 +41,19 @@ export async function POST(request: NextRequest) {
             originalName: file.name,
         });
 
-        const blurredUpload = await uploadToIPFS(processedImages.images.blurred!, {
+        if (!processedImages.images.blurred) {
+            throw new Error('Failed to create blurred image');
+        }
+        const blurredUpload = await uploadToIPFS(processedImages.images.blurred, {
             name: `voucher-blurred-${uploadId}`,
             type: 'voucher-image-blurred',
             originalName: `blurred_${file.name}`,
         });
 
-        const thumbnailUpload = await uploadToIPFS(processedImages.images.thumbnail!, {
+        if (!processedImages.images.thumbnail) {
+            throw new Error('Failed to create thumbnail image');
+        }
+        const thumbnailUpload = await uploadToIPFS(processedImages.images.thumbnail, {
             name: `voucher-thumb-${uploadId}`,
             type: 'voucher-image-thumbnail',
             originalName: `thumb_${file.name}`,

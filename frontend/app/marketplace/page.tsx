@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/components/Header";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CategoryTab from "@/components/Category";
 import FilterSidebar from "@/components/FilterSidebar";
@@ -11,7 +11,7 @@ import { useWallet } from "@/contexts/WalletContext";
 import { getEnhancedActiveListings } from "@/lib/marketplace";
 import { EnhancedListingData } from "@/lib/ipfs-metadata";
 
-export default function Marketplace() {
+function MarketplaceContent() {
     const categories = [
         "Food",
         "Fashion",
@@ -276,4 +276,25 @@ export default function Marketplace() {
             <Footer />
         </div>
     )
+}
+
+function MarketplaceFallback() {
+    return (
+        <div className="min-h-screen bg-off-white">
+            <Header pageType="marketplace" />
+            <div className="page-loading-state">
+                <div className="loading-spinner"></div>
+                <p>Loading CouponMarchè Marketplace...</p>
+            </div>
+            <Footer />
+        </div>
+    );
+}
+
+export default function Marketplace() {
+    return (
+        <Suspense fallback={<MarketplaceFallback />}>
+            <MarketplaceContent />
+        </Suspense>
+    );
 }

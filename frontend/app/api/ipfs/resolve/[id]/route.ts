@@ -10,10 +10,10 @@ const MAPPINGS_FILE = path.join(process.cwd(), 'data', 'ipfs-mappings.json');
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = await params;
+        const { id } = await context.params;
         const listingId = parseInt(id);
 
         if (isNaN(listingId)) {

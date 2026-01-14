@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useWallet } from "@/contexts/WalletContext";
@@ -10,11 +10,12 @@ interface HeaderProps {
     pageType?: 'home' | 'marketplace' | 'sell' | 'vouchers' | 'other';
 }
 
-export default function Header({ pageType = 'home' }: HeaderProps) {
+// Inner component that uses useSearchParams
+function HeaderContent({ pageType = 'home' }: HeaderProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+    const [searchQuery, setSearchQuery] = useState(searchParams?.get('search') || '');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isWalletDropdownOpen, setIsWalletDropdownOpen] = useState(false);
     const [mneeBalance, setMneeBalance] = useState<string | null>(null);
@@ -450,5 +451,27 @@ export default function Header({ pageType = 'home' }: HeaderProps) {
                 </div>
             </div>
         </>
+    );
+}
+
+// Loading fallback for the header
+function HeaderFallback() {
+    return (
+        <header className="header">
+            <nav className="nav-container">
+                <h1 className="nav-logo">
+                    <Link href="/">CouponMarchè</Link>
+                </h1>
+            </nav>
+        </header>
+    );
+}
+
+// Main Header component wrapped with Suspense
+export default function Header({ pageType = 'home' }: HeaderProps) {
+    return (
+        <Suspense fallback={<HeaderFallback />}>
+            <HeaderContent pageType={pageType} />
+        </Suspense>
     );
 }

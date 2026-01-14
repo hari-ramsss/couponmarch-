@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 const PINATA_GATEWAY = "https://gateway.pinata.cloud/ipfs";
 
-type Ctx = { params: Promise<{ hash: string }> | { hash: string } };
-
-export async function GET(request: NextRequest, context: Ctx) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ hash: string }> }
+) {
+  const { hash } = await params;
   try {
-    const { hash } = await context.params;
 
     if (!hash) {
       return NextResponse.json(

@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import FilterDropdown from "./FilterDropdown";
 import ToggleOption from "./ToggleOption";
 
-export default function FilterSidebar() {
+function FilterSidebarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -148,5 +149,21 @@ export default function FilterSidebar() {
       </div>
 
     </aside>
+  );
+}
+
+function FilterSidebarFallback() {
+  return (
+    <aside className="filter-sidebar">
+      <div className="loading-filters">Loading filters...</div>
+    </aside>
+  );
+}
+
+export default function FilterSidebar() {
+  return (
+    <Suspense fallback={<FilterSidebarFallback />}>
+      <FilterSidebarContent />
+    </Suspense>
   );
 }

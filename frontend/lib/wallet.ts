@@ -29,14 +29,14 @@ export async function connectWallet(): Promise<WalletState> {
   }
 
   const provider = new BrowserProvider(window.ethereum as Eip1193Provider);
-  
+
   // Request account access
   await provider.send('eth_requestAccounts', []);
-  
+
   // Get signer
   const signer = await provider.getSigner();
   const address = await signer.getAddress();
-  
+
   // Get network
   const network = await provider.getNetwork();
   const chainId = Number(network.chainId);
@@ -54,12 +54,14 @@ export async function connectWallet(): Promise<WalletState> {
  * Switch to Sepolia testnet
  */
 export async function switchToSepolia(): Promise<void> {
-  if (!isMetaMaskInstalled()) {
+  if (!isMetaMaskInstalled() || !window.ethereum) {
     throw new Error('MetaMask is not installed.');
   }
 
+  const ethereum = window.ethereum;
+
   try {
-    await window.ethereum!.request({
+    await ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: NETWORK_CONFIG.chainId }],
     });
@@ -67,7 +69,7 @@ export async function switchToSepolia(): Promise<void> {
     // This error code indicates that the chain has not been added to MetaMask
     if (switchError.code === 4902) {
       try {
-        await window.ethereum!.request({
+        await ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [NETWORK_CONFIG],
         });
@@ -92,14 +94,14 @@ export async function checkNetwork(provider: BrowserProvider): Promise<boolean> 
  * Get current wallet state
  */
 export async function getWalletState(): Promise<WalletState | null> {
-  if (!isMetaMaskInstalled()) {
+  if (!isMetaMaskInstalled() || !window.ethereum) {
     return null;
   }
 
   try {
-    const provider = new BrowserProvider(window.ethereum!);
+    const provider = new BrowserProvider(window.ethereum as Eip1193Provider);
     const accounts = await provider.listAccounts();
-    
+
     if (accounts.length === 0) {
       return {
         address: null,
@@ -132,14 +134,15 @@ export async function getWalletState(): Promise<WalletState | null> {
  * Listen for account changes
  */
 export function onAccountsChanged(callback: (accounts: string[]) => void): () => void {
-  if (!isMetaMaskInstalled()) {
-    return () => {};
+  if (!isMetaMaskInstalled() || !window.ethereum) {
+    return () => { };
   }
 
-  window.ethereum!.on('accountsChanged', callback);
-  
+  const ethereum = window.ethereum;
+  ethereum.on('accountsChanged', callback);
+
   return () => {
-    window.ethereum!.removeListener('accountsChanged', callback);
+    ethereum.removeListener('accountsChanged', callback);
   };
 }
 
@@ -147,14 +150,15 @@ export function onAccountsChanged(callback: (accounts: string[]) => void): () =>
  * Listen for chain changes
  */
 export function onChainChanged(callback: (chainId: string) => void): () => void {
-  if (!isMetaMaskInstalled()) {
-    return () => {};
+  if (!isMetaMaskInstalled() || !window.ethereum) {
+    return () => { };
   }
 
-  window.ethereum!.on('chainChanged', callback);
-  
+  const ethereum = window.ethereum;
+  ethereum.on('chainChanged', callback);
+
   return () => {
-    window.ethereum!.removeListener('chainChanged', callback);
+    ethereum.removeListener('chainChanged', callback);
   };
 }
 
