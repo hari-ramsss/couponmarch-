@@ -3189,7 +3189,8 @@ body.mobile-menu-open {
   box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
   position: sticky;
   top: 120px;
-  height: fit-content;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

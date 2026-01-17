@@ -282,6 +282,81 @@ After deployment, update addresses in `frontend/lib/contracts.ts`
 
 ---
 
+## 🌐 Mainnet Deployment (Production)
+
+> ⚠️ **CAUTION**: Mainnet deployment uses real funds. Ensure you have thoroughly tested on Sepolia first!
+
+### MNEE Token (Ethereum Mainnet)
+
+| Property | Value |
+|----------|-------|
+| Token Name | MNEE |
+| Contract Address | `0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF` |
+| Network | Ethereum Mainnet (Chain ID: 1) |
+| Standard | ERC-20 |
+
+### Prerequisites for Mainnet
+- ✅ Contracts tested on Sepolia testnet
+- ✅ Security audit completed (recommended)
+- ✅ Sufficient ETH for gas fees on mainnet
+- ✅ Mainnet RPC URL (Alchemy/Infura)
+
+### Step 1: Configure Environment
+Add mainnet configuration to your root `.env`:
+```env
+MAINNET_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY
+PRIVATE_KEY=your_deployer_wallet_private_key
+```
+
+### Step 2: Deploy to Mainnet
+```bash
+# Deploy Marketplace + Escrow (uses real MNEE token automatically)
+npx hardhat run scripts/deployAllMainnet.js --network mainnet
+```
+
+This script will:
+1. Verify connection to Ethereum Mainnet
+2. Use the real MNEE token at `0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF`
+3. Deploy Marketplace contract
+4. Deploy Escrow contract (linked to MNEE + Marketplace)
+5. Automatically link Marketplace ↔ Escrow
+
+### Step 3: Update Frontend for Mainnet
+After deployment, update `frontend/lib/contracts.ts` with mainnet addresses:
+```typescript
+// Mainnet Addresses
+export const MAINNET_ADDRESSES = {
+  MNEE_TOKEN: "0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF",
+  MARKETPLACE: "YOUR_DEPLOYED_MARKETPLACE_ADDRESS",
+  ESCROW: "YOUR_DEPLOYED_ESCROW_ADDRESS",
+};
+```
+
+### Step 4: Configure Frontend Environment
+Update `frontend/.env.local` for mainnet:
+```env
+NEXT_PUBLIC_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY
+NEXT_PUBLIC_CHAIN_ID=1
+```
+
+### Deployment Output Example
+```
+============================================================
+🚀 MAINNET DEPLOYMENT (USING REAL MNEE TOKEN)
+============================================================
+Network: mainnet
+MNEE Token: 0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF
+============================================================
+
+✅ MAINNET DEPLOYMENT SUCCESS
+📋 Deployed Addresses:
+   Token (MNEE):               0x8ccedbAe4916b79da7F3F612EfB2EB93A2bFD6cF
+   Marketplace:                0x...
+   Escrow:                     0x...
+```
+
+---
+
 ## 🏆 Why MNEE?
 
 | Benefit | For CouponMarché |
